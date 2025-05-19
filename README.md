@@ -1,2 +1,2 @@
 # rghosh08.github.io
-my personal wensute
+my personal website
