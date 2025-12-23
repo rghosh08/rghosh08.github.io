@@ -16,12 +16,14 @@
   
     // ---------- component ----------
     function pubCard(pub) {
+      console.log("Rendering:", pub.title);
       const paperUrl = safeUrl(pub.paperUrl);
       const thumbUrl = safeUrl(pub.thumbUrl);
+      console.log("Thumb:", thumbUrl);
   
       const thumbImg = `
         <img class="thumb"
-          src="${escHtml(thumbUrl)}"
+          src="${escHtml(thumbUrl)}?v=3"
           alt="${escHtml(pub.thumbAlt || "Publication thumbnail")}"
           loading="lazy">
       `;
