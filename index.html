@@ -50,6 +50,8 @@
       .thumb { width: 100%; height: 180px; }
       header[role="banner"] { flex-direction: column; align-items: flex-start !important; gap: 14px; }
       header[role="banner"] img { margin-left: 0 !important; }
+      footer { position: static !important; }
+      .page-pad { padding-bottom: 20px; }
     }
   </style>
 </head>
@@ -61,26 +63,50 @@
       <div class="contact-info" style="color:#444;">
         +1 (404) 697-5789 ·
         <a href="mailto:rajat.ghosh11@gmail.com">rajat.ghosh11@gmail.com</a> ·
-        <a href="https://www.linkedin.com/in/i-am-rajat" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+        <a href="https://www.linkedin.com/in/i-am-rajat" target="_blank" rel="noopener noreferrer">LinkedIn</a> ·
+        <a href="resume_rajat-ghosh.pdf" target="_blank" rel="noopener noreferrer">Resume</a>
+      </div>
+
+      <!-- Quick nav for recruiter skim -->
+      <div style="margin-top:10px; font-size: 14px;">
+        <a href="#highlights">Highlights</a><span class="sep">|</span>
+        <a href="#summary">Summary</a><span class="sep">|</span>
+        <a href="#experience">Experience</a><span class="sep">|</span>
+        <a href="#pubs">Publications</a><span class="sep">|</span>
+        <a href="#talks">Talks</a><span class="sep">|</span>
+        <a href="#blogs">Blogs</a>
       </div>
     </div>
+
     <img src="assets/rajat_ghosh.jpeg" alt="Rajat Ghosh" style="height:120px;width:auto;border-radius:8px;margin-left:30px;">
   </header>
 
-  <section>
+  <!-- Fast proof block -->
+  <section id="highlights" style="margin-top: 18px;">
+    <h2>Highlights</h2>
+    <ul style="list-style: square; margin-top: 8px;">
+      <li><b>GenAI Platforms:</b> Built company-scale LLM agents (code search, PR review, unit testing, support automation) adopted by hundreds of engineers/SREs.</li>
+      <li><b>Business Impact:</b> Delivered multi-million-dollar annual savings via productivity gains and vendor replacement.</li>
+      <li><b>Post-Training:</b> Led RLHF/post-training (GRPO/KTO/SFT), evaluation, and safety pipelines for production readiness.</li>
+      <li><b>Cross-Functional:</b> Led enterprise rollout with Product/Infra/Security/Legal; drove compliance and procurement readiness.</li>
+      <li><b>Research:</b> Publications, patents, and open-source contributions in LLM alignment, benchmarking, and AI safety.</li>
+    </ul>
+  </section>
+
+  <section id="summary">
     <h2>Professional Summary</h2>
-     <p> I am a senior technical leader with a sustained record of building company-scale AI platforms from early research through production adoption. My work spans LLM systems, agentic workflows, post-training and alignment, evaluation, and infrastructure optimization, with measurable business impact and durable organizational leverage. I specialize in converting high-ambiguity, frontier AI problems into trusted, scalable platforms used across large engineering organizations.</p>
 
-    <p>Over the past several years, I have led the end-to-end creation of GenAI systems that deliver multi-million-dollar annual impact, replace third-party tooling, and measurably improve developer and operator productivity. These systems—including internal coding agents, support agents, and post-training pipelines—are adopted by hundreds of engineers and SREs across multiple teams and geographies, with usage, accuracy, and cost metrics tracked in production. My scope has consistently extended beyond model quality to include evaluation rigor, safety and alignment, legal readiness, infrastructure efficiency, and operational scalability.</p>
-
-    <p>From a technical leadership perspective, I set long-term architectural direction rather than optimizing isolated components. I have defined and executed multi-year strategies spanning RAG-based systems, agentic workflows, reasoning-oriented post-training (GRPO/KTO/SFT), evaluator models, red-teaming pipelines, and GPU-efficient serving. These efforts established reusable platforms and standards rather than one-off solutions, enabling multiple product teams to build on shared foundations.</p>
-
-    <p>I operate with high leverage through people. I have built and led multi-disciplinary teams across research, ML engineering, and infrastructure, while mentoring interns and senior ICs who converted to high-impact hires or moved on to top AI labs. I established execution rhythms—clear OKRs, weekly stakeholder reviews, EA/GA rollout discipline, and metric-driven iteration—that allowed teams to scale impact while maintaining quality and trust.</p>
-
-    <p>Cross-functional leadership is a core part of my role. I regularly partner with Product, Legal, Security, Infra, and executive leadership to unblock adoption of AI systems in enterprise settings. I have led legal fast-track reviews for AI tools, enterprise risk assessments, and procurement decisions, and I am frequently trusted to represent technical positions in VP-level and exec-level forums.</p>
-
-    <p>Beyond internal impact, I maintain external technical credibility. I have published and presented work at leading ML venues (NeurIPS, ICLR, AAAI workshops), hold multiple patents in LLM alignment, code intelligence, and benchmarking, and actively contribute to open-source and industry initiatives such as MLCommons and PyTorch. This external engagement informs my internal technical judgment and helps align platform decisions with broader industry trajectories.</p>
-
+    <!-- Mobile-first: 1 paragraph + 3 bullets -->
+    <p>
+      I am a senior technical leader with a sustained record of building company-scale AI platforms from early research through production adoption.
+      My work spans LLM systems, agentic workflows, post-training and alignment, evaluation, and infrastructure optimization, with measurable business impact
+      and durable organizational leverage.
+    </p>
+    <ul style="list-style: square;">
+      <li><b>Platform scope:</b> Delivered GenAI systems (developer productivity and support automation) adopted across teams and geographies with production metrics.</li>
+      <li><b>Technical depth:</b> Built end-to-end pipelines across RAG, agentic workflows, reasoning-oriented post-training (GRPO/KTO/SFT), evaluator models, red-teaming, and GPU-efficient serving.</li>
+      <li><b>Leadership:</b> Built and led multi-disciplinary teams; established execution rhythms (OKRs, stakeholder reviews, EA/GA rollouts) and operated effectively across Product, Infra, Security, Legal, and executive stakeholders.</li>
+    </ul>
   </section>
 
   <section>
@@ -95,25 +121,24 @@
     </ul>
   </section>
 
-  <section>
+  <section id="experience">
     <h2>Professional Experience</h2>
 
     <h3>Technical Director, AI – Nutanix (September 2025–Present)</h3>
     <p>
-      As Technical Director, I lead the post-training and evaluation product portfolio for the Nutanix GenAI platform,
-      driving model quality, reliability, and readiness for production.
+      As Technical Director, I lead the post-training and evaluation product portfolio for the Nutanix GenAI platform, driving model quality, reliability,
+      and readiness for production.
     </p>
     <ul style="list-style: square;">
-      <li>Lead an AI team of 7 early career engineers to develop LLM fine-tuning product.</li>
-      <li>Maintaining Nutanix internal developer efficiencty tools into production readiness.</li>
-      <li>Build AI-driven data capabilities including dataset curation, synthetic data generation, and labelling.</li>
+      <li>Lead a team of 7 engineers to deliver post-training and evaluation products for the Nutanix GenAI platform (quality, reliability, production readiness).</li>
+      <li>Owned evaluation strategy across offline + human feedback loops; standardized release gates, regression tracking, and model readiness criteria.</li>
+      <li>Built AI-driven data capabilities including dataset curation, synthetic data generation, and labeling to accelerate fine-tuning and alignment workflows.</li>
     </ul>
 
     <h3>Staff Scientist – Nutanix (May 2021 – August 2025)</h3>
     <p>
-      As Tech Lead Data Scientist, I spearheaded the design and delivery of two production-ready generative AI agents for customer service
-      and developer productivity. I defined the architectures, built the initial implementations, and established rigorous evaluation pipelines
-      to validate quality and reliability.
+      As Tech Lead Data Scientist, I spearheaded the design and delivery of production-ready generative AI agents for customer service and developer productivity.
+      I defined the architectures, built initial implementations, and established rigorous evaluation pipelines to validate quality and reliability.
     </p>
     <ul style="list-style: square;">
       <li>Architected internal coding assistant agents utilizing open-source LLMs, enhancing productivity by 20% ($100M annual impact).</li>
@@ -138,7 +163,7 @@
     </ul>
   </section>
 
-  <section>
+  <section id="pubs">
     <h2>Selected Publications on LLMs</h2>
     <div class="pubs">
       <div class="pub">
@@ -292,8 +317,8 @@
     <h2>Selected Publications from Doctoral Research</h2>
     <div class="pubs">
       <div class="pub">
-        <a href="https://ieeexplore.ieee.org/abstract/document/6782749" target="_blank" rel="noopener noreferrer"></a>
-          <img class="thumb" src="assets/thumbs/pod_spatial.jpg" alt="Publication thumbnail placeholder" loading="lazy">
+        <a href="https://ieeexplore.ieee.org/abstract/document/6782749" target="_blank" rel="noopener noreferrer">
+          <img class="thumb" src="assets/thumbs/pod_spatial.jpg" alt="POD spatial thumbnail" loading="lazy">
         </a>
         <div class="meta">
           <div class="title">Proper Orthogonal Decomposition-Based Modeling Framework for Improving Spatial Resolution of Measured Temperature Data</div>
@@ -306,7 +331,7 @@
       </div>
 
       <div class="pub">
-        <img class="thumb" src="assets/thumbs/multi_parameter_pod.jpg" alt="Publication thumbnail placeholder" loading="lazy">
+        <img class="thumb" src="assets/thumbs/multi_parameter_pod.jpg" alt="Multi-parameter POD thumbnail" loading="lazy">
         <div class="meta">
           <div class="title">Rapid Temperature Predictions in Data Centers using Multi-Parameter Proper Orthogonal Decomposition</div>
           <div class="authors"><b>Rajat Ghosh</b>, Yogendra Joshi <span style="color:rgba(0,0,0,0.55);">et al.</span></div>
@@ -318,7 +343,7 @@
       </div>
 
       <div class="pub">
-        <img class="thumb" src="assets/thumbs/error_estimate_ht.jpg" alt="Publication thumbnail placeholder" loading="lazy">
+        <img class="thumb" src="assets/thumbs/error_estimate_ht.jpg" alt="Error estimation thumbnail" loading="lazy">
         <div class="meta">
           <div class="title">Error Estimation in POD-Based Dynamic Reduced-Order Thermal Modeling of Data Centers</div>
           <div class="authors"><b>Rajat Ghosh</b>, Yogendra Joshi <span style="color:rgba(0,0,0,0.55);">et al.</span></div>
@@ -330,7 +355,7 @@
       </div>
 
       <div class="pub">
-        <img class="thumb" src="assets/thumbs/langmuir.jpg" alt="Publication thumbnail placeholder" loading="lazy">
+        <img class="thumb" src="assets/thumbs/langmuir.jpg" alt="Langmuir thumbnail" loading="lazy">
         <div class="meta">
           <div class="title">Designing Oscillating Cilia That Capture or Release Microscopic Particles</div>
           <div class="authors"><b>Rajat Ghosh</b>, Gavin A. Buxton, Berk Usta, Anna C. Balazs, Alexander Alexeev <span style="color:rgba(0,0,0,0.55);">et al.</span></div>
@@ -365,7 +390,7 @@
     </ul>
   </section>
 
-  <section>
+  <section id="talks">
     <h2>Invited Talks/Panels</h2>
     <ul style="list-style: square;">
       <li>
@@ -397,64 +422,62 @@
         (<a href="https://docs.google.com/presentation/d/1522G-m9BylbB3Cs1hEeRdgikBJqHZ09P1_xanjN0u70/edit?usp=sharing" target="_blank" rel="noopener noreferrer">link</a>)
       </li>
     </ul>
-  </section>  
+  </section>
 
-  <section>
-    <h2>Techical Blogs</h2>
+  <section id="blogs">
+    <h2>Technical Blogs</h2>
     <ul style="list-style: square;">
       <li>
         "Run LLM Pre-Training on Nutanix", Nutanix Developer Blog, September 2023.
         (<a href="https://www.nutanix.dev/2023/09/25/run-llm-pre-training-on-nutanix/" target="_blank" rel="noopener noreferrer">link</a>)
       </li>
-      
+
       <li>
         "LLM Model Selection and Inference Benchmarking on Nutanix Cloud Platform", Nutanix Developer Blog, August 2023.
         (<a href="https://www.nutanix.dev/2023/08/08/llm-model-selection-and-inference-benchmarking-on-nutanix-cloud-platform/" target="_blank" rel="noopener noreferrer">link</a>)
       </li>
-      
+
       <li>
         "It's Time For AI: LLM-Based Unit Tests for OpenSource Repositories", Nutanix Tech Center Blog.
         (<a href="https://www.nutanix.com/tech-center/blog/llm-based-unit-tests-for-opensource-repositories" target="_blank" rel="noopener noreferrer">link</a>)
       </li>
-      
+
       <li>
         "It's Time For AI: Providing Delightful Support with AI at Nutanix", Nutanix Tech Center Blog.
         (<a href="https://www.nutanix.com/tech-center/blog/it-is-time-for-ai-providing-delightful-support-with-ai-at-nutanix" target="_blank" rel="noopener noreferrer">link</a>)
       </li>
-      
+
       <li>
         "It's Time For AI: How Nutanix Implemented an LLM Agent", Nutanix Tech Center Blog.
         (<a href="https://www.nutanix.com/tech-center/blog/its-time-for-ai-how-nutanix-implemented-an-llm-agent" target="_blank" rel="noopener noreferrer">link</a>)
       </li>
-      
+
       <li>
         "It's Time For AI: Benchmark a Coding Agent on Nutanix", Nutanix Tech Center Blog.
         (<a href="https://www.nutanix.com/tech-center/blog/its-time-for-ai-how-nutanix-implemented-a-codegen-api-and-benchmark-the-api-performance" target="_blank" rel="noopener noreferrer">link</a>)
       </li>
-      
+
       <li>
         "RLHF on Nutanix Cloud Platform", Nutanix Developer Blog, November 2023.
         (<a href="https://www.nutanix.dev/2023/11/17/rlhf-on-nutanix-cloud-platform/" target="_blank" rel="noopener noreferrer">link</a>)
       </li>
-      
+
       <li>
         "PEFT for LLM Fine-Tuning on Nutanix Cloud Platform", Nutanix Developer Blog, July 2023.
         (<a href="https://www.nutanix.dev/2023/07/27/peft-for-llm-fine-tuning-on-nutanix-cloud-platform/" target="_blank" rel="noopener noreferrer">link</a>)
       </li>
-      
+
       <li>
         "Run Attention on Nutanix", Nutanix Developer Blog, May 2023.
         (<a href="https://www.nutanix.dev/2023/05/05/run-attention-on-nutanix/" target="_blank" rel="noopener noreferrer">link</a>)
       </li>
-      
+
       <li>
         "Train Transformer Models on Nutanix", Nutanix Developer Blog, May 2023.
         (<a href="https://www.nutanix.dev/2023/05/24/train-transformer-models-on-nutanix/" target="_blank" rel="noopener noreferrer">link</a>)
       </li>
-      
     </ul>
   </section>
-  
 
   <section>
     <h2>Teaching Experience</h2>
@@ -487,7 +510,7 @@
     <a href="mailto:rajat.ghosh11@gmail.com" style="text-decoration:none;color:#0077b5;">rajat.ghosh11@gmail.com</a> |
     +1 (404) 697-5789 |
     <a href="https://www.linkedin.com/in/i-am-rajat" target="_blank" rel="noopener noreferrer" style="text-decoration:none;color:#0077b5;">LinkedIn</a> |
-    <a href="resume_rajat-ghosh.pdf" target="_blank" style="text-decoration:none;color:#0077b5;">Resume</a>
+    <a href="resume_rajat-ghosh.pdf" target="_blank" rel="noopener noreferrer" style="text-decoration:none;color:#0077b5;">Resume</a>
   </footer>
 </body>
 </html>
