@@ -1,158 +1,355 @@
 <!DOCTYPE html>
 <html lang="en">
-
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rajat Ghosh, Ph.D.</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 0 auto; max-width: 900px; line-height: 1.6; padding: 20px; }
-        header { text-align: center; margin-bottom: 20px; }
-        section { margin-bottom: 40px; }
-        h1, h2 { color: #333; }
-        h2 { border-bottom: 2px solid #ddd; padding-bottom: 5px; }
-        ul { list-style: square; }
-        .contact-info a { text-decoration: none; color: #0066cc; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rajat Ghosh, Ph.D.</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0 auto; max-width: 900px; line-height: 1.6; padding: 20px; }
+    header { text-align: center; margin-bottom: 20px; }
+    section { margin-bottom: 40px; }
+    h1, h2 { color: #333; }
+    h2 { border-bottom: 2px solid #ddd; padding-bottom: 5px; }
+
+    /* General links */
+    .contact-info a, a { text-decoration: none; color: #0066cc; }
+
+    /* Publications card layout */
+    .pubs { display: flex; flex-direction: column; gap: 22px; margin-top: 12px; }
+    .pub { display: flex; gap: 18px; align-items: flex-start; }
+    .thumb {
+      width: 190px;
+      height: 110px;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 1px solid rgba(0,0,0,0.08);
+      background: #f5f5f5;
+      flex: 0 0 auto;
+    }
+    .meta { flex: 1; }
+    .title { font-size: 1.08rem; font-weight: 650; line-height: 1.25; margin-bottom: 6px; }
+    .authors { color: rgba(0,0,0,0.65); margin-bottom: 6px; }
+    .venue { margin-bottom: 6px; }
+    .links a { font-weight: 600; }
+    .sep { margin: 0 6px; color: rgba(0,0,0,0.35); }
+
+    /* Make long pages not hide content under fixed footer */
+    .page-pad { padding-bottom: 70px; }
+
+    /* Mobile */
+    @media (max-width: 700px){
+      .pub { flex-direction: column; }
+      .thumb { width: 100%; height: 180px; }
+    }
+  </style>
 </head>
-<body>
-    <header style="display: flex; align-items: center; justify-content: space-between; padding: 20px; border-bottom: 1px solid #ccc;">
+
+<body class="page-pad">
+  <header style="display: flex; align-items: center; justify-content: space-between; padding: 20px; border-bottom: 1px solid #ccc;">
     <div style="text-align: left;">
-        <h1 style="margin: 0 0 8px 0; font-size: 28px;">Rajat Ghosh, Ph.D.</h1>
+      <h1 style="margin: 0 0 8px 0; font-size: 28px;">Rajat Ghosh, Ph.D.</h1>
+      <div class="contact-info" style="color:#444;">
+        +1 (404) 697-5789 ·
+        <a href="mailto:rajat.ghosh11@gmail.com">rajat.ghosh11@gmail.com</a> ·
+        <a href="https://www.linkedin.com/in/i-am-rajat" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+      </div>
     </div>
     <img src="rajat_ghosh.jpeg" alt="rajat" style="height:120px;width:auto;border-radius:8px;margin-left:30px;">
-    </header>
+  </header>
 
-    <section>
-        <h2>Professional Summary</h2>
-        <p>Technical leader with 12 years of expertise in reinforcement learning, optimal control, Large Language Models (LLM), AI safety, and retrieval augmented generation (RAG). Demonstrated success in architecting scalable, impactful AI-driven applications and leading multidisciplinary teams.</p>
-        <p>He joined Nutanix in 2021 as a Staff Scientist to establish and lead advanced AI research, including Reinforcement Learning, across the product portfolio, bringing startup experience rooted in his PhD work. He played a foundational role in Nutanix’s early generative AI efforts, architecting SupportGPT and defining its core RAG design and evaluation framework at a time when open-source LLMs were still immature, ultimately driving the system to production-grade quality. Rajat has also provided deep technical leadership in AI safety, alignment, and reasoning-model fine-tuning, influencing the NAI roadmap and AI-efficiency initiatives. Beyond product innovation, he is a trusted technical leader across the company and with customers—leading the evaluation and adoption of Cursor as Nutanix’s coding assistant, serving as the SME for legal reviews of AI tools and LLMs, supporting the conversion of a key healthcare customer to NAI 1.0, and partnering with Corporate Development on AI technical due diligence—while building a strong AI research team and contributing to industry thought leadership through peer-reviewed publications, invited conference panels, internal talks, and Nutanix AI/ML blogs.
-</p>
-    </section>
+  <section>
+    <h2>Professional Summary</h2>
+    <p>Technical leader with 12 years of expertise in reinforcement learning, optimal control, Large Language Models (LLM), AI safety, and retrieval augmented generation (RAG). Demonstrated success in architecting scalable, impactful AI-driven applications and leading multidisciplinary teams.</p>
+    <p>
+      He joined Nutanix in 2021 as a Staff Scientist to establish and lead advanced AI research, including Reinforcement Learning, across the product portfolio, bringing startup experience rooted in his PhD work. He played a foundational role in Nutanix’s early generative AI efforts, architecting SupportGPT and defining its core RAG design and evaluation framework at a time when open-source LLMs were still immature, ultimately driving the system to production-grade quality. Rajat has also provided deep technical leadership in AI safety, alignment, and reasoning-model fine-tuning, influencing the NAI roadmap and AI-efficiency initiatives. Beyond product innovation, he is a trusted technical leader across the company and with customers—leading the evaluation and adoption of Cursor as Nutanix’s coding assistant, serving as the SME for legal reviews of AI tools and LLMs, supporting the conversion of a key healthcare customer to NAI 1.0, and partnering with Corporate Development on AI technical due diligence—while building a strong AI research team and contributing to industry thought leadership through peer-reviewed publications, invited conference panels, internal talks, and Nutanix AI/ML blogs.
+    </p>
+  </section>
 
-    <section>
-        <h2>Skills</h2>
-        <ul>
-            <li><strong>Domains:</strong> Large Language Models, ML Architecture, Reinforcement Learning, Retrieval Augmented Generation, API Design, LLMOps, Optimal Control</li>
-            <li><strong>ML Libraries:</strong> HuggingFace, Transformers, Gym, PyTorch, Jax</li>
-            <li><strong>Databases:</strong> SQL, Milvus, Elasticsearch</li>
-            <li><strong>Languages:</strong> C++, Python, Go, JavaScript, Bash, Java</li>
-            <li><strong>Technologies:</strong> PySpark, Docker, Prometheus, Jenkins, Postman</li>
-            <li><strong>Platforms:</strong> AWS, GCP, NVIDIA</li>
-        </ul>
-    </section>
+  <section>
+    <h2>Skills</h2>
+    <ul style="list-style: square;">
+      <li><strong>Domains:</strong> Large Language Models, ML Architecture, Reinforcement Learning, Retrieval Augmented Generation, API Design, LLMOps, Optimal Control</li>
+      <li><strong>ML Libraries:</strong> HuggingFace, Transformers, Gym, PyTorch, Jax</li>
+      <li><strong>Databases:</strong> SQL, Milvus, Elasticsearch</li>
+      <li><strong>Languages:</strong> C++, Python, Go, JavaScript, Bash, Java</li>
+      <li><strong>Technologies:</strong> PySpark, Docker, Prometheus, Jenkins, Postman</li>
+      <li><strong>Platforms:</strong> AWS, GCP, NVIDIA</li>
+    </ul>
+  </section>
 
-    <section>
-        <h2>Professional Experience</h2>
-        <h3>Technical Director, AI – Nutanix (September 2025-Present)</h3>
-        <p> As Technical Director, I lead the post-training and evaluation product portfolio for the Nutanix GenAI platform, driving model quality, reliability, and readiness for production. </p> 
-        <ul>
-            <li>Lead an AI team of 7 early career engineers to develop LLM fine-tuning product.</li>
-            <li>Maintaining Nutanix internal developer efficiencty tools into production readiness.</li>
-            <li>Build AI-driven data capabilities including dataset curation, synthetic data generation, and labelling.</li>
-        </ul>
-        <h3>Staff Scientist – Nutanix (May 2021 – August 2025)</h3>
-        <p> As Tech Lead Data Scientist, I spearheaded the design and delivery of two production-ready generative AI agents for customer service and developer productivity. I defined the architectures, built the initial implementations, and established rigorous evaluation pipelines to validate quality and reliability. </p> 
-        <ul>
-            <li>Architected internal coding assistant agents utilizing open-source LLMs, enhancing productivity by 20% ($100M annual impact).</li>
-            <li>Developed RAG-based support assistants using fine-tuned LLMs ($20M annual impact).</li>
-            <li>Engineered reinforcement learning strategies for distributed infrastructure management.</li>
-            <li>Created explainability metrics and object detection inference APIs using YOLO v5.</li>
-        </ul>
-        <h3>Co-Founder & CEO – AdeptDC, Inc. (July 2015 – April 2021)</h3>
-        <ul>
-            <li>Founded a startup with a vision to optimize data center energy efficiency through RL-based dynamic control.</li>
-            <li>Managed a 7-member team, securing ~$1M funding from VC and NSF.</li>
-        </ul>
-    </section>
+  <section>
+    <h2>Professional Experience</h2>
+    <h3>Technical Director, AI – Nutanix (September 2025–Present)</h3>
+    <p>As Technical Director, I lead the post-training and evaluation product portfolio for the Nutanix GenAI platform, driving model quality, reliability, and readiness for production.</p>
+    <ul style="list-style: square;">
+      <li>Lead an AI team of 7 early career engineers to develop LLM fine-tuning product.</li>
+      <li>Maintaining Nutanix internal developer efficiencty tools into production readiness.</li>
+      <li>Build AI-driven data capabilities including dataset curation, synthetic data generation, and labelling.</li>
+    </ul>
 
-    <section>
-        <h2>Education</h2>
-        <ul>
-            <li>Ph.D., Georgia Institute of Technology, 2013</li>
-            <li>M.S., Georgia Institute of Technology, 2010</li>
-            <li>B.S., Indian Institute of Technology, Kharagpur, 2008</li>
-        </ul>
-    </section>
+    <h3>Staff Scientist – Nutanix (May 2021 – August 2025)</h3>
+    <p>As Tech Lead Data Scientist, I spearheaded the design and delivery of two production-ready generative AI agents for customer service and developer productivity. I defined the architectures, built the initial implementations, and established rigorous evaluation pipelines to validate quality and reliability.</p>
+    <ul style="list-style: square;">
+      <li>Architected internal coding assistant agents utilizing open-source LLMs, enhancing productivity by 20% ($100M annual impact).</li>
+      <li>Developed RAG-based support assistants using fine-tuned LLMs ($20M annual impact).</li>
+      <li>Engineered reinforcement learning strategies for distributed infrastructure management.</li>
+      <li>Created explainability metrics and object detection inference APIs using YOLO v5.</li>
+    </ul>
 
-    <section>
-        <h2>Selected Publications</h2>
-        <ul>
-            <li>Pipalani, Y. et al., "Go-UT-Bench: A Fine-Tuning Dataset for LLM-Based Unit Test Generation in Go", arXiv, 2025. (<a href="https://www.arxiv.org/abs/2511.10868" target="_blank" rel="noopener noreferrer">link</a>)</li>
-            <li>Lalan, A. et al., "A Multi-Agent Framework for Stateful Inference-Time Search", arXiv, 2025. (<a href="https://arxiv.org/abs/2510.07147" target="_blank" rel="noopener noreferrer">link</a>)</li>
-            <li>Shah, P. et al., "RANGER -- Repository-Level Agent for Graph-Enhanced Retrieval", arXiv, 2025. (<a href="https://arxiv.org/abs/2509.25257" target="_blank" rel="noopener noreferrer">link</a>)</li>
-            <li>Zhou, J. et al., "BAR Conjecture: the Feasibility of Inference Budget-Constrained LLM Services with Authenticity and Reasoning", arXiv, 2025. (<a href="https://arxiv.org/abs/2507.23170v2" target="_blank" rel="noopener noreferrer">link</a>)</li>
-            <li>Nimmaturi, D. et al., "Predictive Scaling Laws for Efficient GRPO Training of Large Reasoning Models", arXiv, 2025. (<a href="https://arxiv.org/abs/2507.18014" target="_blank" rel="noopener noreferrer">link</a>)</li>
-            <li>Singhal, A. et al., "Code2json: Can a zero-shot llm extract code features for code rag?", ICLR Workshop, 2025. (<a href="https://openreview.net/pdf?id=glBWrVLvKi" target="_blank" rel="noopener noreferrer">link</a>)</li>
-            <li>Ghosh, S. et al., "AI Risk and Reliability Benchmark from MLCommons", arXiv, 2025. (<a href="https://arxiv.org/html/2503.05731v1" target="_blank" rel="noopener noreferrer">link</a>)</li>
-            <li>Bhargava, V. et al., "CPP-UT-Bench: Complex Unit Tests in C++ via LLMs", NeurIPS Workshop, 2024. (<a href="https://arxiv.org/abs/2412.02735" target="_blank" rel="noopener noreferrer">link</a>)</li>
-            <li>Khera, A. et al., "Efficient Alignment of LLMs via Data Sampling", NeurIPS, 2024. (<a href="https://arxiv.org/abs/2411.10545" target="_blank" rel="noopener noreferrer">link</a>)</li>
-            <li>Vidgen, B. et al., "AI Safety Benchmark v0.5", MLCommons, 2024. (<a href="https://arxiv.org/abs/2404.12241" target="_blank" rel="noopener noreferrer">link</a>)</li>
-            <li>Ghosh, R. et al., "Proper orthogonal decomposition-based modeling framework for improving spatial resolution of measured temperature data", IEEE CPMT, 2014. (<a href="https://ieeexplore.ieee.org/abstract/document/6782749" target="_blank" rel="noopener noreferrer">link</a>)</li>
-            <li>Ghosh, R. et al., "Rapid Temperature Predictions in Data Centers using Multi-Parameter Proper Orthogonal Decomposition", Numerical Heat Transfer, Part A: Applications, 2014. (<a href="https://www.tandfonline.com/doi/abs/10.1080/10407782.2013.869090" target="_blank" rel="noopener noreferrer">link</a>)</li>
-            <li>Ghosh, R. et al., "Error estimation in POD-based dynamic reduced-order thermal modeling of data centers", International Journal of Heat and Mass Transfer, 2013. (<a href="https://www.sciencedirect.com/science/article/abs/pii/S001793101200779X" target="_blank" rel="noopener noreferrer">link</a>)</li>
-            <li>Ghosh, R. et al., "Designing Oscillating Cilia That Capture or Release Microscopic Particles", Langmuir, 2010. (<a href="https://pubs.acs.org/doi/abs/10.1021/la902926w" target="_blank" rel="noopener noreferrer">link</a>)</li>
-        </ul>
-    </section>
+    <h3>Co-Founder &amp; CEO – AdeptDC, Inc. (July 2015 – April 2021)</h3>
+    <ul style="list-style: square;">
+      <li>Founded a startup with a vision to optimize data center energy efficiency through RL-based dynamic control.</li>
+      <li>Managed a 7-member team, securing ~$1M funding from VC and NSF.</li>
+    </ul>
+  </section>
 
-    <section>
-        <h2>Patents</h2>
-        <ul>
-            <li>Systems and Methods for Intelligent Controls in Data Centers, U.S. Utility Patent, 2019. (<a href="https://patents.google.com/patent/US20170187592" target="_blank" rel="noopener noreferrer">link</a>)</li>
-        </ul>
-    </section>
+  <section>
+    <h2>Education</h2>
+    <ul style="list-style: square;">
+      <li>Ph.D., Georgia Institute of Technology, 2013</li>
+      <li>M.S., Georgia Institute of Technology, 2010</li>
+      <li>B.S., Indian Institute of Technology, Kharagpur, 2008</li>
+    </ul>
+  </section>
 
-    <section>
-        <h2>Honors and Awards</h2>
-        <ul>
-            <li>NSF Small Business Innovation Research Award, 2015. (<a href="https://www.sbir.gov/awards/151908"_blank" rel="noopener noreferrer">link</a>)</li>
-            <li>Georgia Research Alliance Phase IA Award, 2014.</li>
-            <li>NSF I-Corps Award, 2014. </li>
-        </ul>
-    </section>
+  <!-- UPDATED: Selected Publications in card format with placeholder thumbnails -->
+  <section>
+    <h2>Selected Publications</h2>
 
-    <section>
-        <h2>Invited Talks/Panels</h2>
-        <ul>
-            <li>"Agentic AI: Future Challenges and Opportunities", AAAI Workshop, March 2025. (<a href="https://sites.google.com/view/datasafe25/home" target="_blank" rel="noopener noreferrer">link</a>)</li>
-        </ul>
-    </section>
+    <div class="pubs">
 
-    <section>
-        <h2>Teaching Experience</h2>
-        <ul>
-            <li>Thermodynamics, Georgia Tech, 2013</li>
-            <li>Experimental Methodology, Georgia Tech, 2012-2013</li>
-            <li>Introduction to Energy Systems Engineering, Georgia Tech, 2012</li>
-            <li>Creative Decisions and Design, Georgia Tech, 2009</li>
-        </ul>
-    </section>
+      <div class="pub">
+        <img class="thumb" src="assets/thumbs/placeholder.png" alt="Publication thumbnail placeholder" loading="lazy">
+        <div class="meta">
+          <div class="title">Go-UT-Bench: A Fine-Tuning Dataset for LLM-Based Unit Test Generation in Go</div>
+          <div class="authors">Pipalani, Y. <span style="color:rgba(0,0,0,0.55);">et al.</span></div>
+          <div class="venue"><b>arXiv</b> · 2025</div>
+          <div class="links">
+            <a href="https://www.arxiv.org/abs/2511.10868" target="_blank" rel="noopener noreferrer">Paper</a>
+          </div>
+        </div>
+      </div>
 
-    <section>
-        <h2>Professional Services</h2>
-        <ul>
-            <li> Reviewer for NeurIPS 2025
-        </ul>
-    </section>
+      <div class="pub">
+        <img class="thumb" src="assets/thumbs/placeholder.png" alt="Publication thumbnail placeholder" loading="lazy">
+        <div class="meta">
+          <div class="title">A Multi-Agent Framework for Stateful Inference-Time Search</div>
+          <div class="authors">Lalan, A. <span style="color:rgba(0,0,0,0.55);">et al.</span></div>
+          <div class="venue"><b>arXiv</b> · 2025</div>
+          <div class="links">
+            <a href="https://arxiv.org/abs/2510.07147" target="_blank" rel="noopener noreferrer">Paper</a>
+          </div>
+        </div>
+      </div>
 
+      <div class="pub">
+        <img class="thumb" src="assets/thumbs/placeholder.png" alt="Publication thumbnail placeholder" loading="lazy">
+        <div class="meta">
+          <div class="title">RANGER — Repository-Level Agent for Graph-Enhanced Retrieval</div>
+          <div class="authors">Shah, P. <span style="color:rgba(0,0,0,0.55);">et al.</span></div>
+          <div class="venue"><b>arXiv</b> · 2025</div>
+          <div class="links">
+            <a href="https://arxiv.org/abs/2509.25257" target="_blank" rel="noopener noreferrer">Paper</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="pub">
+        <img class="thumb" src="assets/thumbs/placeholder.png" alt="Publication thumbnail placeholder" loading="lazy">
+        <div class="meta">
+          <div class="title">BAR Conjecture: the Feasibility of Inference Budget-Constrained LLM Services with Authenticity and Reasoning</div>
+          <div class="authors">Zhou, J. <span style="color:rgba(0,0,0,0.55);">et al.</span></div>
+          <div class="venue"><b>arXiv</b> · 2025</div>
+          <div class="links">
+            <a href="https://arxiv.org/abs/2507.23170v2" target="_blank" rel="noopener noreferrer">Paper</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="pub">
+        <img class="thumb" src="assets/thumbs/placeholder.png" alt="Publication thumbnail placeholder" loading="lazy">
+        <div class="meta">
+          <div class="title">Predictive Scaling Laws for Efficient GRPO Training of Large Reasoning Models</div>
+          <div class="authors">Nimmaturi, D. <span style="color:rgba(0,0,0,0.55);">et al.</span></div>
+          <div class="venue"><b>arXiv</b> · 2025</div>
+          <div class="links">
+            <a href="https://arxiv.org/abs/2507.18014" target="_blank" rel="noopener noreferrer">Paper</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="pub">
+        <img class="thumb" src="assets/thumbs/placeholder.png" alt="Publication thumbnail placeholder" loading="lazy">
+        <div class="meta">
+          <div class="title">Code2json: Can a Zero-Shot LLM Extract Code Features for Code RAG?</div>
+          <div class="authors">Singhal, A. <span style="color:rgba(0,0,0,0.55);">et al.</span></div>
+          <div class="venue"><b>ICLR Workshop</b> · 2025</div>
+          <div class="links">
+            <a href="https://openreview.net/pdf?id=glBWrVLvKi" target="_blank" rel="noopener noreferrer">Paper</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="pub">
+        <img class="thumb" src="assets/thumbs/placeholder.png" alt="Publication thumbnail placeholder" loading="lazy">
+        <div class="meta">
+          <div class="title">AI Risk and Reliability Benchmark from MLCommons</div>
+          <div class="authors">Ghosh, S. <span style="color:rgba(0,0,0,0.55);">et al.</span></div>
+          <div class="venue"><b>arXiv</b> · 2025</div>
+          <div class="links">
+            <a href="https://arxiv.org/html/2503.05731v1" target="_blank" rel="noopener noreferrer">Paper</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="pub">
+        <img class="thumb" src="assets/thumbs/placeholder.png" alt="Publication thumbnail placeholder" loading="lazy">
+        <div class="meta">
+          <div class="title">CPP-UT-Bench: Complex Unit Tests in C++ via LLMs</div>
+          <div class="authors">Bhargava, V. <span style="color:rgba(0,0,0,0.55);">et al.</span></div>
+          <div class="venue"><b>NeurIPS Workshop</b> · 2024</div>
+          <div class="links">
+            <a href="https://arxiv.org/abs/2412.02735" target="_blank" rel="noopener noreferrer">Paper</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="pub">
+        <img class="thumb" src="assets/thumbs/placeholder.png" alt="Publication thumbnail placeholder" loading="lazy">
+        <div class="meta">
+          <div class="title">Efficient Alignment of LLMs via Data Sampling</div>
+          <div class="authors">Khera, A. <span style="color:rgba(0,0,0,0.55);">et al.</span></div>
+          <div class="venue"><b>NeurIPS</b> · 2024</div>
+          <div class="links">
+            <a href="https://arxiv.org/abs/2411.10545" target="_blank" rel="noopener noreferrer">Paper</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="pub">
+        <img class="thumb" src="assets/thumbs/placeholder.png" alt="Publication thumbnail placeholder" loading="lazy">
+        <div class="meta">
+          <div class="title">AI Safety Benchmark v0.5</div>
+          <div class="authors">Vidgen, B. <span style="color:rgba(0,0,0,0.55);">et al.</span></div>
+          <div class="venue"><b>MLCommons</b> · 2024</div>
+          <div class="links">
+            <a href="https://arxiv.org/abs/2404.12241" target="_blank" rel="noopener noreferrer">Paper</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="pub">
+        <img class="thumb" src="assets/thumbs/placeholder.png" alt="Publication thumbnail placeholder" loading="lazy">
+        <div class="meta">
+          <div class="title">Proper Orthogonal Decomposition-Based Modeling Framework for Improving Spatial Resolution of Measured Temperature Data</div>
+          <div class="authors">Ghosh, R. <span style="color:rgba(0,0,0,0.55);">et al.</span></div>
+          <div class="venue"><b>IEEE CPMT</b> · 2014</div>
+          <div class="links">
+            <a href="https://ieeexplore.ieee.org/abstract/document/6782749" target="_blank" rel="noopener noreferrer">Paper</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="pub">
+        <img class="thumb" src="assets/thumbs/placeholder.png" alt="Publication thumbnail placeholder" loading="lazy">
+        <div class="meta">
+          <div class="title">Rapid Temperature Predictions in Data Centers using Multi-Parameter Proper Orthogonal Decomposition</div>
+          <div class="authors">Ghosh, R. <span style="color:rgba(0,0,0,0.55);">et al.</span></div>
+          <div class="venue"><b>Numerical Heat Transfer, Part A</b> · 2014</div>
+          <div class="links">
+            <a href="https://www.tandfonline.com/doi/abs/10.1080/10407782.2013.869090" target="_blank" rel="noopener noreferrer">Paper</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="pub">
+        <img class="thumb" src="assets/thumbs/placeholder.png" alt="Publication thumbnail placeholder" loading="lazy">
+        <div class="meta">
+          <div class="title">Error Estimation in POD-Based Dynamic Reduced-Order Thermal Modeling of Data Centers</div>
+          <div class="authors">Ghosh, R. <span style="color:rgba(0,0,0,0.55);">et al.</span></div>
+          <div class="venue"><b>International Journal of Heat and Mass Transfer</b> · 2013</div>
+          <div class="links">
+            <a href="https://www.sciencedirect.com/science/article/abs/pii/S001793101200779X" target="_blank" rel="noopener noreferrer">Paper</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="pub">
+        <img class="thumb" src="assets/thumbs/placeholder.png" alt="Publication thumbnail placeholder" loading="lazy">
+        <div class="meta">
+          <div class="title">Designing Oscillating Cilia That Capture or Release Microscopic Particles</div>
+          <div class="authors">Ghosh, R. <span style="color:rgba(0,0,0,0.55);">et al.</span></div>
+          <div class="venue"><b>Langmuir</b> · 2010</div>
+          <div class="links">
+            <a href="https://pubs.acs.org/doi/abs/10.1021/la902926w" target="_blank" rel="noopener noreferrer">Paper</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>Patents</h2>
+    <ul style="list-style: square;">
+      <li>Systems and Methods for Intelligent Controls in Data Centers, U.S. Utility Patent, 2019.
+        (<a href="https://patents.google.com/patent/US20170187592" target="_blank" rel="noopener noreferrer">link</a>)
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Honors and Awards</h2>
+    <ul style="list-style: square;">
+      <li>NSF Small Business Innovation Research Award, 2015.
+        (<a href="https://www.sbir.gov/awards/151908" target="_blank" rel="noopener noreferrer">link</a>)
+      </li>
+      <li>Georgia Research Alliance Phase IA Award, 2014.</li>
+      <li>NSF I-Corps Award, 2014.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Invited Talks/Panels</h2>
+    <ul style="list-style: square;">
+      <li>"Agentic AI: Future Challenges and Opportunities", AAAI Workshop, March 2025.
+        (<a href="https://sites.google.com/view/datasafe25/home" target="_blank" rel="noopener noreferrer">link</a>)
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Teaching Experience</h2>
+    <ul style="list-style: square;">
+      <li>Thermodynamics, Georgia Tech, 2013</li>
+      <li>Experimental Methodology, Georgia Tech, 2012-2013</li>
+      <li>Introduction to Energy Systems Engineering, Georgia Tech, 2012</li>
+      <li>Creative Decisions and Design, Georgia Tech, 2009</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Professional Services</h2>
+    <ul style="list-style: square;">
+      <li>Reviewer for NeurIPS 2025</li>
+    </ul>
+  </section>
 </body>
-<footer style="
-    position: fixed; 
-    bottom: 0; 
-    left: 0; 
-    width: 100%; 
-    background-color: white;
-    text-align: center; 
-    padding: 10px 0; 
-    border-top: 1px solid #ccc; 
-    font-size: 14px; 
-    z-index: 100;">
-    
-    <a href="mailto:rajat.ghosh11@gmail.com" style="text-decoration:none;color:#0077b5;">rajat.ghosh11@gmail.com</a> |
-    +1 (404) 697-5789 |
-    <a href="https://linkedin.com/in/i-am-rajat" style="text-decoration:none;color:#0077b5;">LinkedIn</a> |
-    <a href="resume_rajat-ghosh.pdf" target="_blank" style="text-decoration:none;color:#0077b5;">Resume</a>
-</footer>
 
+<footer style="
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: white;
+  text-align: center;
+  padding: 10px 0;
+  border-top: 1px solid #ccc;
+  font-size: 14px;
+  z-index: 100;">
+  <a href="mailto:rajat.ghosh11@gmail.com" style="text-decoration:none;color:#0077b5;">rajat.ghosh11@gmail.com</a> |
+  +1 (404) 697-5789 |
+  <a href="https://linkedin.com/in/i-am-rajat" target="_blank" rel="noopener noreferrer" style="text-decoration:none;color:#0077b5;">LinkedIn</a> |
+  <a href="resume_rajat-ghosh.pdf" target="_blank" style="text-decoration:none;color:#0077b5;">Resume</a>
+</footer>
 </html>
