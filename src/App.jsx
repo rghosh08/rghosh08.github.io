@@ -52,7 +52,6 @@ function Header() {
   return (
     <header role="banner" className="hero">
       <div className="hero-copy">
-        <p className="eyebrow">AI platform leader · LLM systems · Applied research</p>
         <h1>Rajat Ghosh, Ph.D.</h1>
         <p className="hero-subtitle">
           I build production GenAI platforms, evaluation systems, and post-training workflows that turn frontier AI research into measurable enterprise impact.
