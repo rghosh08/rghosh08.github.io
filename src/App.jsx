@@ -54,7 +54,7 @@ function Header() {
       <div className="hero-copy">
         <h1>Rajat Ghosh, Ph.D.</h1>
         <p className="hero-subtitle">
-          I build production GenAI platforms, evaluation systems, and post-training workflows that turn frontier AI research into measurable enterprise impact.
+          AI-native builder of production GenAI platforms, evaluation systems, and post-training workflows that turn frontier AI research into measurable enterprise impact.
         </p>
 
         <div className="hero-actions">
