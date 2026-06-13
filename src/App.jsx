@@ -16,7 +16,6 @@ const CONSULTING_FORM_ENDPOINT = import.meta.env.VITE_CONSULTING_FORM_ENDPOINT;
 
 const navItems = [
   ["#highlights", "Highlights"],
-  ["#ai-consulting", "AI Consulting"],
   ["#experience", "Experience"],
   ["#education", "Education"],
   ["#pubs", "Publications"],
@@ -28,6 +27,7 @@ const navItems = [
   ["#blogs", "Blogs"],
   ["#teaching", "Teaching"],
   ["#professional-services", "Services"],
+  ["#ai-consulting", "AI Consulting"],
 ];
 
 const sectionModules = [
@@ -230,10 +230,10 @@ export default function App() {
     <main className="site-shell">
       <Header />
       <Highlights />
-      <AIConsulting />
       {sectionModules.map((html, index) => (
         <HtmlSection key={index} html={html} />
       ))}
+      <AIConsulting />
       <Footer />
     </main>
   );
