@@ -9,10 +9,10 @@
     "preview": "vite preview --host 0.0.0.0"
   },
   "dependencies": {
+    "@calcom/embed-react": "^1.5.3",
     "@vitejs/plugin-react": "latest",
-    "vite": "latest",
     "react": "latest",
-    "react-dom": "latest"
-  },
-  "devDependencies": {}
+    "react-dom": "latest",
+    "vite": "latest"
+  }
 }

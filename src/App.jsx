@@ -1,4 +1,5 @@
 import React from "react";
+import { getCalApi } from "@calcom/embed-react";
 import experienceHtml from "../component/experience.html?raw";
 import educationHtml from "../component/education.html?raw";
 import publicationsHtml from "../component/publications.html?raw";
@@ -13,6 +14,11 @@ import teachingHtml from "../component/teaching.html?raw";
 import professionalServicesHtml from "../component/professional-services.html?raw";
 
 const CONSULTING_FORM_ENDPOINT = import.meta.env.VITE_CONSULTING_FORM_ENDPOINT;
+
+// Cal.com booking link, e.g. "rajat-ghosh/consultation". The "Book a call"
+// button only renders when this is set, so the page degrades gracefully.
+const CAL_LINK = import.meta.env.VITE_CAL_LINK;
+const CAL_NAMESPACE = "consultation";
 
 const navItems = [
   ["#highlights", "Highlights"],
@@ -108,6 +114,14 @@ function AIConsulting() {
   const [formStatus, setFormStatus] = React.useState("idle");
   const [formMessage, setFormMessage] = React.useState("");
 
+  React.useEffect(() => {
+    if (!CAL_LINK) return;
+    (async () => {
+      const cal = await getCalApi({ namespace: CAL_NAMESPACE });
+      cal("ui", { hideEventTypeDetails: false, layout: "month_view" });
+    })();
+  }, []);
+
   async function handleConsultingSubmit(event) {
     event.preventDefault();
 
@@ -156,6 +170,20 @@ function AIConsulting() {
         <p>
           Advisory and hands-on support for teams building GenAI platforms, evaluation systems, post-training workflows, and AI-native developer tools.
         </p>
+        {CAL_LINK && (
+          <div className="consulting-booking">
+            <p>Prefer to talk it through? Book a time that works for you.</p>
+            <button
+              type="button"
+              className="button primary"
+              data-cal-namespace={CAL_NAMESPACE}
+              data-cal-link={CAL_LINK}
+              data-cal-config='{"layout":"month_view"}'
+            >
+              Book a call
+            </button>
+          </div>
+        )}
       </div>
 
       <form

@@ -36,9 +36,10 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          # Formspree endpoint is public (it ships in the client bundle), so it's safe here.
-          # Override via a repo variable of the same name if it ever changes.
+          # These values are public (they ship in the client bundle), so they're safe here.
+          # Override via repo variables of the same names if they ever change.
           VITE_CONSULTING_FORM_ENDPOINT: ${{ vars.VITE_CONSULTING_FORM_ENDPOINT || 'https://formspree.io/f/xeewpkab' }}
+          VITE_CAL_LINK: ${{ vars.VITE_CAL_LINK || 'rghosh8/ai-consulting' }}
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5
