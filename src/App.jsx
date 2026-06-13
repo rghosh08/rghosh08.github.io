@@ -7,6 +7,7 @@ import arxivHtml from "../component/arxiv.html?raw";
 import mlcommonsHtml from "../component/mlcommons.html?raw";
 import doctoralPublicationsHtml from "../component/doctoral-publications.html?raw";
 import patentsHtml from "../component/patents.html?raw";
+import softwarePackagesHtml from "../component/software-packages.html?raw";
 import awardsHtml from "../component/awards.html?raw";
 import talksHtml from "../component/talks.html?raw";
 import blogsHtml from "../component/blogs.html?raw";
@@ -28,6 +29,7 @@ const navItems = [
   ["#arxiv", "arXiv"],
   ["#mlcommons", "MLCommons"],
   ["#patents", "Patents"],
+  ["#software-packages", "Software"],
   ["#awards", "Awards"],
   ["#talks", "Talks"],
   ["#blogs", "Blogs"],
@@ -44,6 +46,7 @@ const sectionModules = [
   mlcommonsHtml,
   doctoralPublicationsHtml,
   patentsHtml,
+  softwarePackagesHtml,
   awardsHtml,
   talksHtml,
   blogsHtml,
