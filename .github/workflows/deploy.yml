@@ -35,6 +35,10 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          # Formspree endpoint is public (it ships in the client bundle), so it's safe here.
+          # Override via a repo variable of the same name if it ever changes.
+          VITE_CONSULTING_FORM_ENDPOINT: ${{ vars.VITE_CONSULTING_FORM_ENDPOINT || 'https://formspree.io/f/xeewpkab' }}
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

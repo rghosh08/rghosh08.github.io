@@ -12,6 +12,8 @@ import blogsHtml from "../component/blogs.html?raw";
 import teachingHtml from "../component/teaching.html?raw";
 import professionalServicesHtml from "../component/professional-services.html?raw";
 
+const CONSULTING_FORM_ENDPOINT = import.meta.env.VITE_CONSULTING_FORM_ENDPOINT;
+
 const navItems = [
   ["#highlights", "Highlights"],
   ["#ai-consulting", "AI Consulting"],
@@ -103,27 +105,45 @@ function Highlights() {
 }
 
 function AIConsulting() {
-  function handleConsultingSubmit(event) {
+  const [formStatus, setFormStatus] = React.useState("idle");
+  const [formMessage, setFormMessage] = React.useState("");
+
+  async function handleConsultingSubmit(event) {
     event.preventDefault();
+
+    if (!CONSULTING_FORM_ENDPOINT) {
+      setFormStatus("error");
+      setFormMessage("Consultation requests are not configured yet. Please email rajat.ghosh11@gmail.com.");
+      return;
+    }
+
+    setFormStatus("submitting");
+    setFormMessage("");
 
     const formData = new FormData(event.currentTarget);
     const name = formData.get("name");
-    const email = formData.get("email");
-    const organization = formData.get("organization") || "N/A";
-    const consultingArea = formData.get("consulting_area");
-    const projectDetails = formData.get("project_details");
-    const subject = `AI consulting request from ${name}`;
-    const body = [
-      `Name: ${name}`,
-      `Email: ${email}`,
-      `Organization: ${organization}`,
-      `Consulting Area: ${consultingArea}`,
-      "",
-      "Project Details:",
-      projectDetails,
-    ].join("\n");
+    formData.append("_subject", `AI consulting request from ${name}`);
 
-    window.location.href = `mailto:rajat.ghosh11@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    try {
+      const response = await fetch(CONSULTING_FORM_ENDPOINT, {
+        method: "POST",
+        body: formData,
+        headers: {
+          Accept: "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Form submission failed");
+      }
+
+      event.currentTarget.reset();
+      setFormStatus("success");
+      setFormMessage("Thanks. Your request was sent successfully.");
+    } catch {
+      setFormStatus("error");
+      setFormMessage("Sorry, the request could not be sent. Please email rajat.ghosh11@gmail.com.");
+    }
   }
 
   return (
@@ -171,7 +191,15 @@ function AIConsulting() {
           <textarea name="project_details" rows="5" required />
         </label>
 
-        <button className="button primary" type="submit">Request Consultation</button>
+        <button className="button primary" type="submit" disabled={formStatus === "submitting"}>
+          {formStatus === "submitting" ? "Sending..." : "Request Consultation"}
+        </button>
+
+        {formMessage && (
+          <p className={`form-status ${formStatus}`} role="status">
+            {formMessage}
+          </p>
+        )}
       </form>
     </section>
   );

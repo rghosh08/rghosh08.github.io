@@ -258,6 +258,21 @@ li { margin: 0.28rem 0; }
   cursor: pointer;
 }
 
+.consulting-form button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.form-status {
+  grid-column: 1 / -1;
+  margin: -2px 0 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.form-status.success { color: #1d6b3a; }
+.form-status.error { color: #9b2c2c; }
+
 /* Publications reading-card layout */
 .pubs {
   display: flex;
