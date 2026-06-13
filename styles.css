@@ -254,6 +254,31 @@ li { margin: 0.28rem 0; }
   box-shadow: 0 8px 18px rgba(23, 32, 51, 0.08);
 }
 
+.logo-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  min-height: 110px;
+  padding: 14px;
+  border: 1px solid rgba(23, 32, 51, 0.08);
+  background: white;
+  box-shadow: 0 8px 18px rgba(23, 32, 51, 0.06);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.logo-link:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(23, 32, 51, 0.12);
+}
+
+.logo {
+  width: 162px;
+  max-height: 86px;
+  object-fit: contain;
+  display: block;
+}
+
 .meta {
   flex: 1;
   display: flex;
@@ -290,6 +315,16 @@ li { margin: 0.28rem 0; }
   font-size: 0.93rem;
   line-height: 1.52;
 }
+
+.details {
+  margin: 0 0 12px;
+  padding-left: 1.1rem;
+  color: #526078;
+  font-size: 0.93rem;
+  line-height: 1.52;
+}
+
+.details li { margin: 0.18rem 0; }
 
 .links {
   display: flex;
