@@ -415,35 +415,12 @@ li { margin: 0.28rem 0; }
 .details li { margin: 0.18rem 0; }
 
 /* Timeline variant — used by Experience and Education (.pubs.timeline) */
-/* The outer .timeline is the scroll viewport; .timeline-track holds the
-   spine and cards and grows with content so the spine spans every entry. */
 .timeline {
-  max-height: 460px;
-  overflow-y: auto;
-  padding-right: 8px;
-  scrollbar-width: thin;
-  scrollbar-color: var(--gold-line) transparent;
-  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
-          mask-image: linear-gradient(180deg, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
-}
-
-.timeline::-webkit-scrollbar { width: 8px; }
-.timeline::-webkit-scrollbar-track { background: transparent; }
-.timeline::-webkit-scrollbar-thumb {
-  background: var(--gold-line);
-  border-radius: 999px;
-}
-.timeline::-webkit-scrollbar-thumb:hover { background: var(--accent); }
-
-.timeline-track {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
   padding-left: 30px;
 }
 
-.timeline-track::before {
+.timeline::before {
   content: "";
   position: absolute;
   left: 7px;
