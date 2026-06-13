@@ -120,7 +120,10 @@ function AIConsulting() {
     setFormStatus("submitting");
     setFormMessage("");
 
-    const formData = new FormData(event.currentTarget);
+    // Capture the form node now: React nulls event.currentTarget after the
+    // synchronous handler returns, so it is unusable past the await below.
+    const form = event.currentTarget;
+    const formData = new FormData(form);
     const name = formData.get("name");
     formData.append("_subject", `AI consulting request from ${name}`);
 
@@ -137,7 +140,7 @@ function AIConsulting() {
         throw new Error("Form submission failed");
       }
 
-      event.currentTarget.reset();
+      form.reset();
       setFormStatus("success");
       setFormMessage("Thanks. Your request was sent successfully.");
     } catch {
