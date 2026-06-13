@@ -198,6 +198,66 @@ li { margin: 0.28rem 0; }
   line-height: 1.55;
 }
 
+.consulting-section {
+  display: grid;
+  grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.consulting-copy p {
+  margin: 0;
+  color: #526078;
+  font-size: 0.98rem;
+  line-height: 1.6;
+}
+
+.consulting-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.consulting-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #33405a;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.consulting-form input,
+.consulting-form select,
+.consulting-form textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 10px 12px;
+  color: var(--ink);
+  font: inherit;
+  background: rgba(255,255,255,0.82);
+}
+
+.consulting-form textarea { resize: vertical; }
+
+.consulting-form input:focus,
+.consulting-form select:focus,
+.consulting-form textarea:focus {
+  outline: 2px solid rgba(36, 87, 197, 0.22);
+  border-color: rgba(36, 87, 197, 0.42);
+}
+
+.full-span,
+.consulting-form button {
+  grid-column: 1 / -1;
+}
+
+.consulting-form button {
+  justify-self: start;
+  cursor: pointer;
+}
+
 /* Publications reading-card layout */
 .pubs {
   display: flex;
@@ -375,6 +435,7 @@ li { margin: 0.28rem 0; }
   .hero { grid-template-columns: 1fr; }
   .headshot { width: 150px; height: 150px; }
   .highlight-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .consulting-section { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 700px){
@@ -384,4 +445,5 @@ li { margin: 0.28rem 0; }
   .pub > a { flex-basis: auto; width: 100%; }
   .thumb { width: 100%; height: 180px; }
   .highlight-grid { grid-template-columns: 1fr; }
+  .consulting-form { grid-template-columns: 1fr; }
 }

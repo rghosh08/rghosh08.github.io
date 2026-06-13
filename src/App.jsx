@@ -14,6 +14,7 @@ import professionalServicesHtml from "../component/professional-services.html?ra
 
 const navItems = [
   ["#highlights", "Highlights"],
+  ["#ai-consulting", "AI Consulting"],
   ["#experience", "Experience"],
   ["#education", "Education"],
   ["#pubs", "Publications"],
@@ -58,9 +59,7 @@ function Header() {
         </p>
 
         <div className="hero-actions">
-          <a className="button primary" href="https://scholar.google.com/citations?user=rhXtLnQAAAAJ&hl=en&oi=ao" target="_blank" rel="noopener noreferrer">Google Scholar</a>
-          <a className="button" href="mailto:rajat.ghosh11@gmail.com">Contact Me</a>
-          <a className="button ghost" href="https://www.linkedin.com/in/i-am-rajat" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+          <a className="button primary" href="#ai-consulting">AI Consulting</a>
         </div>
       </div>
 
@@ -103,6 +102,81 @@ function Highlights() {
   );
 }
 
+function AIConsulting() {
+  function handleConsultingSubmit(event) {
+    event.preventDefault();
+
+    const formData = new FormData(event.currentTarget);
+    const name = formData.get("name");
+    const email = formData.get("email");
+    const organization = formData.get("organization") || "N/A";
+    const consultingArea = formData.get("consulting_area");
+    const projectDetails = formData.get("project_details");
+    const subject = `AI consulting request from ${name}`;
+    const body = [
+      `Name: ${name}`,
+      `Email: ${email}`,
+      `Organization: ${organization}`,
+      `Consulting Area: ${consultingArea}`,
+      "",
+      "Project Details:",
+      projectDetails,
+    ].join("\n");
+
+    window.location.href = `mailto:rajat.ghosh11@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  }
+
+  return (
+    <section id="ai-consulting" className="consulting-section">
+      <div className="consulting-copy">
+        <h2>AI Consulting</h2>
+        <p>
+          Advisory and hands-on support for teams building GenAI platforms, evaluation systems, post-training workflows, and AI-native developer tools.
+        </p>
+      </div>
+
+      <form
+        className="consulting-form"
+        onSubmit={handleConsultingSubmit}
+      >
+        <label>
+          Name
+          <input type="text" name="name" autoComplete="name" required />
+        </label>
+
+        <label>
+          Email
+          <input type="email" name="email" autoComplete="email" required />
+        </label>
+
+        <label>
+          Organization
+          <input type="text" name="organization" autoComplete="organization" />
+        </label>
+
+        <label>
+          Consulting Area
+          <select name="consulting_area" defaultValue="GenAI platform strategy">
+            <option>GenAI platform strategy</option>
+            <option>LLM evaluation and benchmarking</option>
+            <option>Post-training and alignment</option>
+            <option>AI agents for engineering workflows</option>
+            <option>AI safety and risk evaluation</option>
+            <option>Other</option>
+          </select>
+        </label>
+
+        <label className="full-span">
+          What are you trying to build?
+          <textarea name="project_details" rows="5" required />
+        </label>
+
+        <button className="button primary" type="submit">Request Consultation</button>
+      </form>
+    </section>
+  );
+}
+
 function HtmlSection({ html }) {
   return <div dangerouslySetInnerHTML={{ __html: extractPageContent(html) }} />;
 }
@@ -113,6 +187,7 @@ function Footer() {
       <span>Rajat Ghosh, Ph.D.</span>
       <a href="mailto:rajat.ghosh11@gmail.com">rajat.ghosh11@gmail.com</a>
       <span>+1 (404) 697-5789</span>
+      <a href="https://scholar.google.com/citations?user=rhXtLnQAAAAJ&hl=en&oi=ao" target="_blank" rel="noopener noreferrer">Google Scholar</a>
       <a href="https://www.linkedin.com/in/i-am-rajat" target="_blank" rel="noopener noreferrer">LinkedIn</a>
       <a href="resume_rajat-ghosh.pdf" target="_blank" rel="noopener noreferrer">Resume</a>
     </footer>
@@ -124,6 +199,7 @@ export default function App() {
     <main className="site-shell">
       <Header />
       <Highlights />
+      <AIConsulting />
       {sectionModules.map((html, index) => (
         <HtmlSection key={index} html={html} />
       ))}
