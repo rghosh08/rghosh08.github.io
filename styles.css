@@ -414,57 +414,6 @@ li { margin: 0.28rem 0; }
 
 .details li { margin: 0.18rem 0; }
 
-/* Timeline variant — used by Experience and Education (.pubs.timeline) */
-.timeline {
-  position: relative;
-  padding-left: 30px;
-}
-
-.timeline::before {
-  content: "";
-  position: absolute;
-  left: 7px;
-  top: 18px;
-  bottom: 18px;
-  width: 3px;
-  border-radius: 3px;
-  background: linear-gradient(180deg, var(--accent), var(--brand));
-}
-
-/* let the node sit on the spine, outside the card */
-.timeline .pub { overflow: visible; }
-
-/* repurpose the card's left accent bar as a timeline node */
-.timeline .pub::before {
-  inset: auto;
-  top: 28px;
-  left: -29px;
-  width: 15px;
-  height: 15px;
-  border-radius: 50%;
-  background: var(--brand);
-  border: 3px solid var(--bg);
-  box-shadow: 0 0 0 2px var(--gold-line);
-}
-
-.timeline .pub:hover::before,
-.timeline .pub:focus-within::before {
-  background: var(--accent);
-}
-
-.period {
-  width: fit-content;
-  margin-bottom: 9px;
-  padding: 3px 11px;
-  border-radius: 999px;
-  border: 1px solid var(--gold-line);
-  background: var(--gold-soft);
-  color: #8a6116;
-  font-size: 0.82rem;
-  font-weight: 740;
-  letter-spacing: 0.01em;
-}
-
 .pkg-install {
   margin: 0 0 12px;
 }
