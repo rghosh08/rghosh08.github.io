@@ -35,7 +35,6 @@ const navItems = [
   ["#blogs", "Blogs"],
   ["#teaching", "Teaching"],
   ["#professional-services", "Services"],
-  ["#ai-consulting", "AI Consulting"],
 ];
 
 const sectionModules = [
@@ -68,10 +67,6 @@ function Header() {
         <p className="hero-subtitle">
           AI-native researcher and builder.
         </p>
-
-        <div className="hero-actions">
-          <a className="button primary" href="#ai-consulting">AI Consulting</a>
-        </div>
       </div>
 
       <img
