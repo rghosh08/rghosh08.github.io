@@ -67,14 +67,6 @@ function Header() {
         <p className="hero-subtitle">
           AI-native researcher and builder.
         </p>
-        <a
-          className="resume-chip"
-          href="resume_rajat-ghosh.pdf"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Resume ↗
-        </a>
       </div>
 
       <img
@@ -87,6 +79,7 @@ function Header() {
         {navItems.map(([href, label]) => (
           <a key={href} href={href}>{label}</a>
         ))}
+        <a href="resume_rajat-ghosh.pdf" target="_blank" rel="noopener noreferrer">Resume</a>
       </nav>
     </header>
   );
