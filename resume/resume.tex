@@ -1,0 +1,120 @@
+% Resume — Rajat Ghosh, Ph.D.
+% Source of truth for public/resume_rajat-ghosh.pdf.
+% Compile: tectonic resume.tex   (or pdflatex/Overleaf)
+\documentclass[10.5pt]{article}
+
+\usepackage[margin=0.9in]{geometry}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{parskip}
+
+\definecolor{heading}{HTML}{3D5A80}
+\definecolor{linkcolor}{HTML}{2457C5}
+\hypersetup{colorlinks=true, urlcolor=linkcolor}
+
+\pagestyle{empty}
+\setlength{\parskip}{4pt}
+
+\titleformat{\section}{\large\bfseries\color{heading}}{}{0pt}{}[\vspace{-9pt}\rule{\textwidth}{0.6pt}\vspace{-4pt}]
+\titlespacing*{\section}{0pt}{8pt}{3pt}
+
+\newcommand{\role}[3]{\textbf{#1} \hfill #2, \textit{#3}\par}
+\newcommand{\scope}[1]{\vspace{1pt}#1\par}
+
+\setlist[itemize]{leftmargin=1.2em, itemsep=1pt, topsep=2pt, parsep=0pt, label=\textbullet}
+
+\begin{document}
+
+\begin{center}
+  {\LARGE\bfseries Rajat Ghosh, Ph.D.}\\[4pt]
+  {\color{gray}+1 (404) 697-5789 \,\textperiodcentered\, \href{mailto:rajat.ghosh11@gmail.com}{rajat.ghosh11@gmail.com} \,\textperiodcentered\, \href{https://linkedin.com/in/i-am-rajat}{LinkedIn} \,\textperiodcentered\, \href{https://scholar.google.com/citations?user=rhXtLnQAAAAJ&hl=en&oi=ao}{Google Scholar} \,\textperiodcentered\, \href{https://rghosh08.github.io/}{Website}}
+\end{center}
+
+\section{Professional Summary}
+Senior technical leader building company-scale GenAI platforms for post-training and evaluation, from research to production. Focus on strategic value creation from GenAI using experimentation. Set long-term technical vision in high-ambiguity frontier domains --- agentic systems, retrieval-augmented generation (RAG), developer productivity, and AI safety --- while scaling high-performing teams and partnering with Product, Infra, Legal, and executive leadership.
+
+\section{Professional Experience}
+
+\role{Technical Director, AI}{Nutanix}{September 2025 -- Present}
+\scope{Lead the post-training and evaluation platform.}
+\begin{itemize}
+  \item Hired and managed a team of 7 early-career engineers to build a sovereign AI platform.
+  \item Architected the post-training platform (GRPO and SFT) on hybrid multi-cloud environments.
+  \item Led architecture, evaluation, and production rollout for coding agents.
+  \item Architected evaluation and multimodal data pipelines through the MLCommons consortium.
+\end{itemize}
+
+\vspace{4pt}
+\role{Staff Data Scientist}{Nutanix}{May 2021 -- August 2025}
+\scope{Tech lead for the design and delivery of two production-ready GenAI agents for customer service and developer productivity.}
+\begin{itemize}
+  \item Architected internal coding-assistant agents using open-source LLMs and agentic patterns such as RAG, tool-calling, and Reflexion, and led adoption of third-party AI coding assistants (estimated \$100M annual impact from a 20\% improvement in developer productivity).
+  \item Developed customer support assistants using open-source LLMs and RAG with an open-source vector database (estimated \$20M annual impact from support-engineering productivity gains).
+  \item Engineered reinforcement learning strategies for distributed infrastructure management, including Kubernetes, Cassandra, storage tiering, data warehousing, and load balancing.
+\end{itemize}
+
+\vspace{4pt}
+\role{Co-Founder \& CEO}{AdeptDC, Inc.}{July 2015 -- April 2021}
+\scope{Founded AdeptDC to commercialize Ph.D.\ research in reinforcement learning and data center energy efficiency, centered on closed-loop control of cooling systems using chip-level temperature signals.}
+\begin{itemize}
+  \item Built and led a 7-member team delivering AI-driven optimization solutions to enterprises.
+  \item Secured \$1M in venture and NSF funding; exited via acquisition.
+\end{itemize}
+
+\section{Education}
+\begin{itemize}
+  \item \textbf{Ph.D.}, Mechanical Engineering, Georgia Institute of Technology, Atlanta, 2013
+  \item \textbf{M.S.}, Mechanical Engineering, Georgia Institute of Technology, Atlanta, 2010
+  \item \textbf{B.S.}, Mechanical Engineering, Indian Institute of Technology, Kharagpur, 2008
+\end{itemize}
+
+\section{Honors and Awards}
+\begin{itemize}
+  \item ICML Silver Reviewer, 2026
+  \item NSF Small Business Innovation Research Award, 2015
+  \item NSF I-Corps Award, 2014
+\end{itemize}
+
+\section{Patents}
+\begin{itemize}
+  \item \textbf{R. Ghosh} and Y. K. Joshi, \textit{Systems and Methods for Intelligent Controls for Optimal Resource Allocation for Data Center Operations}, \href{https://patents.google.com/patent/US10439912B2/en}{US Patent 10,439,912}, Oct.\ 2019.
+\end{itemize}
+
+\section{Selected Publications --- LLMs \& Alignment}
+\begin{itemize}
+  \item P. Shah, \textbf{R. Ghosh}, A. Singhal, and D. Dutta, \textit{RANGER: Repository-level Agent for Graph-Enhanced Retrieval}, AgenticSE Workshop, KDD 2026.
+  \item \textbf{R. Ghosh} and D. Dutta, \textit{Action Shapley: A training data selection metric for Training World Models for Reinforcement Learning}, Workshop on World Models: Understanding, Modelling and Scaling, ICLR 2026.
+  \item \textbf{R. Ghosh}, V. Bhargava, and D. Dutta, \textit{Compute-Efficient GRPO Training}, Workshop on Scaling Post-training for LLM, ICLR 2026.
+  \item K. Pereira, N. Sinha, \textbf{R. Ghosh}, and D. Dutta, \textit{CR-Bench: Evaluating the Real-World Utility of AI Code Review Agents}, Workshop on Agents in the Wild: Safety, Security, and Beyond, ICLR 2026.
+  \item A. Lalan, \textbf{R. Ghosh}, and D. Dutta, \textit{UT-Evolve: An Evolutionary Agent for Unit Test Writing}, Workshop on Multi-Agent Learning and Its Opportunities in the Era of Generative AI, ICLR 2026.
+  \item A. Singhal, \textbf{R. Ghosh}, et al., \textit{Code2JSON: Can a Zero-Shot LLM Extract Code Features for Code RAG?}, Workshop on Deep Learning for Code, ICLR 2025.
+  \item V. Bhargava, \textbf{R. Ghosh}, and D. Dutta, \textit{CPP-UT-Bench: Can LLMs Write Complex Unit Tests in C++?}, Workshop on Statistics in LLMs, NeurIPS 2024.
+  \item A. Khera, \textbf{R. Ghosh}, and D. Dutta, \textit{Efficient Alignment of Large Language Models via Data Sampling}, ENLSP Workshop (PMLR), NeurIPS 2024.
+\end{itemize}
+
+\section{Consortium Publications --- MLCommons}
+\begin{itemize}
+  \item Contributor (1 of 42 authors), \textit{AILuminate Security: Jailbreak Benchmark v0.5}, MLCommons, 2025.
+  \item Contributor (1 of 82 authors), \textit{AILuminate: AI Risk and Reliability Benchmark v1.0}, MLCommons, 2025.
+  \item Contributor (1 of 100 authors), \textit{AI Safety Benchmark v0.5}, MLCommons, 2024.
+\end{itemize}
+
+\section{Selected Publications --- Doctoral Research (Foundations)}
+\begin{itemize}
+  \item \textbf{R. Ghosh} and Y. Joshi, \textit{Proper Orthogonal Decomposition-Based Modeling Framework for Improving Spatial Resolution of Measured Temperature Data}, IEEE Transactions on Components, Packaging and Manufacturing Technology, 2014.
+  \item \textbf{R. Ghosh} and Y. Joshi, \textit{Rapid Temperature Predictions in Data Centers Using Multi-Parameter Proper Orthogonal Decomposition}, Numerical Heat Transfer, Part A: Applications, 2014.
+  \item \textbf{R. Ghosh} and Y. Joshi, \textit{Error Estimation in POD-Based Dynamic Reduced-Order Thermal Modeling of Data Centers}, International Journal of Heat and Mass Transfer, 2013.
+  \item \textbf{R. Ghosh}, G. A. Buxton, O. B. Usta, A. C. Balazs, and A. Alexeev, \textit{Designing Oscillating Cilia That Capture or Release Microscopic Particles}, Langmuir, 2010.
+\end{itemize}
+
+\section{Invited Talks}
+\begin{itemize}
+  \item Agentic AI: Future Challenges and Opportunities, \href{https://sites.google.com/view/datasafe25/home}{AAAI Workshop}, March 2025.
+\end{itemize}
+
+\section{Review \& Service}
+Reviewer for ICML, SIGIR, ICLR (2026), NeurIPS (2025), AAAI (2025), IEEE CPMT Journal.
+
+\end{document}

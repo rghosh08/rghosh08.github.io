@@ -20,3 +20,6 @@ pnpm-debug.log*
 .DS_Store
 .vscode/
 .idea/
+
+# Compiled resume (served copy lives in public/)
+resume/resume.pdf
