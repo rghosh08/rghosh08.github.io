@@ -102,6 +102,27 @@ h1 {
 
 .button.ghost { background: rgba(255,255,255,0.56); }
 
+.resume-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 16px;
+  padding: 6px 13px;
+  border: 1px solid var(--gold-line);
+  border-radius: 999px;
+  color: #33405a;
+  font-size: 0.86rem;
+  font-weight: 620;
+  background: var(--gold-soft);
+}
+
+.resume-chip:hover {
+  color: white;
+  border-color: #b9851d;
+  background: linear-gradient(135deg, #d6a43a, #9a6a13);
+  text-decoration: none;
+}
+
 .headshot {
   width: 160px;
   height: 160px;
