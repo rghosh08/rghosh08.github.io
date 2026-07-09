@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Introduction to PyTorch | Rajat Ghosh, Ph.D.</title>
+  <meta name="description" content="A hands-on PyTorch tutorial by Rajat Ghosh, Ph.D.: tensors, automatic differentiation, building and training neural networks on CPU and GPU, DataLoaders, and transfer learning with pre-trained models." />
+  <meta name="author" content="Rajat Ghosh, Ph.D." />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#f6f8fc" />
+  <link rel="canonical" href="https://rajatghosh.me/tutorials/pytorch.html" />
+
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://rajatghosh.me/tutorials/pytorch.html" />
+  <meta property="og:title" content="Introduction to PyTorch" />
+  <meta property="og:description" content="Tensors, autograd, neural networks, DataLoaders, GPU training, and transfer learning — a hands-on PyTorch tutorial." />
+
+  <style>
+    :root {
+      --bg: #f6f8fc;
+      --card: #ffffff;
+      --ink: #16203a;
+      --ink-soft: #3d4a63;
+      --muted: #697488;
+      --line: rgba(22, 32, 58, 0.10);
+      --line-strong: rgba(22, 32, 58, 0.16);
+      --brand: #2457c5;
+      --brand-dark: #1a3f92;
+      --brand-soft: rgba(36, 87, 197, 0.08);
+      --brand-line: rgba(36, 87, 197, 0.24);
+      --accent: #a4761c;
+      --accent-soft: rgba(164, 118, 28, 0.10);
+      --accent-line: rgba(164, 118, 28, 0.32);
+      --code-bg: #141c30;
+      --code-ink: #dce4f5;
+      --r-sm: 10px;
+      --r-md: 14px;
+      --r-lg: 20px;
+      --pill: 999px;
+      --shadow-sm: 0 1px 2px rgba(22, 32, 58, 0.04), 0 6px 18px rgba(22, 32, 58, 0.05);
+      --shadow-md: 0 10px 30px rgba(22, 32, 58, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.7;
+      background:
+        radial-gradient(1100px 460px at 50% -160px, var(--brand-soft), transparent 70%),
+        var(--bg);
+    }
+
+    a { color: var(--brand); text-decoration: none; }
+    a:hover { color: var(--brand-dark); text-decoration: underline; }
+
+    .shell {
+      width: min(860px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 56px;
+    }
+
+    .topbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 26px;
+    }
+
+    .crumb {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 13px;
+      border: 1px solid var(--line);
+      border-radius: var(--pill);
+      color: var(--ink-soft);
+      font-size: 0.88rem;
+      font-weight: 600;
+      background: var(--card);
+      transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+    }
+
+    .crumb:hover {
+      color: #fff;
+      border-color: transparent;
+      background: var(--brand);
+      text-decoration: none;
+    }
+
+    .byline { color: var(--muted); font-size: 0.88rem; }
+
+    article {
+      padding: 40px 44px;
+      border: 1px solid var(--line);
+      border-top: 2px solid var(--accent-line);
+      border-radius: var(--r-lg);
+      background: var(--card);
+      box-shadow: var(--shadow-md);
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(1.8rem, 4vw, 2.5rem);
+      font-weight: 750;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+    }
+
+    .lede { margin: 0 0 18px; color: var(--ink-soft); font-size: 1.05rem; }
+
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 26px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 32px;
+      padding: 5px 13px;
+      border: 1px solid var(--brand-line);
+      border-radius: var(--pill);
+      color: var(--brand);
+      font-size: 0.88rem;
+      font-weight: 650;
+      background: var(--brand-soft);
+      transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+    }
+
+    a.chip:hover {
+      color: #fff;
+      border-color: transparent;
+      background: var(--brand);
+      text-decoration: none;
+    }
+
+    span.chip {
+      color: var(--accent);
+      border-color: var(--accent-line);
+      background: var(--accent-soft);
+    }
+
+    .toc {
+      margin: 0 0 30px;
+      padding: 18px 22px;
+      border: 1px solid var(--line);
+      border-radius: var(--r-md);
+      background: var(--bg);
+    }
+
+    .toc strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 0.82rem;
+      font-weight: 720;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .toc ol { margin: 0; padding-left: 1.3rem; }
+    .toc li { margin: 3px 0; font-size: 0.94rem; }
+
+    h2 {
+      margin: 38px 0 12px;
+      padding-top: 22px;
+      border-top: 1px solid var(--line);
+      font-size: 1.45rem;
+      font-weight: 720;
+      line-height: 1.25;
+      letter-spacing: -0.02em;
+    }
+
+    h2:first-of-type { margin-top: 26px; }
+
+    h3 {
+      margin: 24px 0 8px;
+      font-size: 1.08rem;
+      font-weight: 700;
+    }
+
+    p, li { color: var(--ink-soft); }
+    p { margin: 0 0 14px; }
+    ul, ol { margin: 0 0 14px; padding-left: 1.3rem; }
+    li { margin: 4px 0; }
+    strong { color: var(--ink); }
+
+    code {
+      padding: 1px 6px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: rgba(22, 32, 58, 0.05);
+      color: var(--ink);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.86em;
+    }
+
+    pre {
+      margin: 0 0 18px;
+      padding: 16px 18px;
+      overflow-x: auto;
+      border-radius: var(--r-sm);
+      background: var(--code-bg);
+      box-shadow: var(--shadow-sm);
+    }
+
+    pre code {
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: var(--code-ink);
+      font-size: 0.85rem;
+      line-height: 1.6;
+    }
+
+    pre .c { color: #7e8db0; }        /* comments */
+    pre .k { color: #8ab4ff; }        /* keywords */
+    pre .s { color: #a8d5a2; }        /* strings */
+
+    figure { margin: 0 0 6px; }
+
+    figure img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border: 1px solid var(--line);
+      border-radius: var(--r-sm);
+      background: #fff;
+    }
+
+    figcaption {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .footer {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px 18px;
+      margin-top: 28px;
+      padding: 22px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .footer span:first-child { color: var(--ink); font-weight: 720; }
+
+    @media (max-width: 700px) {
+      article { padding: 24px 20px; border-radius: var(--r-md); }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="topbar">
+      <a class="crumb" href="../">&larr; rajatghosh.me</a>
+      <span class="byline">Rajat Ghosh, Ph.D.</span>
+    </div>
+
+    <article>
+      <h1>Introduction to PyTorch</h1>
+      <p class="lede">A hands-on walkthrough of PyTorch fundamentals — from tensors and automatic differentiation to training a convolutional network on a GPU and adapting pre-trained models.</p>
+
+      <div class="meta-row">
+        <a class="chip" href="https://colab.research.google.com/drive/1hQffNq7f-UA4u_d5xRrHb2DOHCfCeVt6" target="_blank" rel="noopener noreferrer">Open in Colab</a>
+        <span class="chip">PyTorch</span>
+        <span class="chip">Tutorial</span>
+      </div>
+
+      <p>PyTorch is a popular neural net framework with the following features:</p>
+      <ul>
+        <li>Automatic differentiation</li>
+        <li>Compiling computation graphs</li>
+        <li>Libraries of algorithms and network primitives, providing high-level abstractions for working with neural networks</li>
+        <li>Support for graphics processing units (GPUs)</li>
+      </ul>
+
+      <div class="toc">
+        <strong>In this tutorial</strong>
+        <ol>
+          <li><a href="#tensors">Tensors</a></li>
+          <li><a href="#autodiff">Automatic differentiation</a></li>
+          <li><a href="#simple-net">Building a simple neural network</a></li>
+          <li><a href="#data">PyTorch Datasets and DataLoaders</a></li>
+          <li><a href="#visualize">Visualizing examples from FashionMNIST</a></li>
+          <li><a href="#cpu">Training on the CPU = slow!</a></li>
+          <li><a href="#gpu">Training on the GPU = faster!</a></li>
+          <li><a href="#pretrained">Using pre-trained weights</a></li>
+        </ol>
+      </div>
+
+      <h2 id="tensors">1. Tensors</h2>
+      <p>Tensors are a specialized data structure very similar to arrays and matrices. In PyTorch, we use tensors to encode the inputs and outputs of a model, as well as the model's parameters.</p>
+      <p>Tensors are similar to NumPy's ndarrays, except that tensors can run on GPUs or other hardware accelerators.</p>
+
+      <h3>Initializing a tensor</h3>
+<pre><code><span class="k">import</span> torch
+<span class="k">import</span> numpy <span class="k">as</span> np
+<span class="k">import</span> math
+
+<span class="c"># Create a tensor directly from data</span>
+x = torch.tensor([[1, 2], [3, 4]], dtype=torch.float32)
+print(<span class="s">"x:"</span>, x)
+
+<span class="c"># Create a tensor of zeros</span>
+y = torch.zeros(2, 2)
+print(<span class="s">"y:"</span>, y)
+
+<span class="c"># Create a tensor of ones</span>
+z = torch.ones(2, 2)
+print(<span class="s">"z:"</span>, z)
+
+<span class="c"># Create a random tensor</span>
+w = torch.rand(2, 2)
+print(<span class="s">"w:"</span>, w)
+
+<span class="c"># Create a tensor from a NumPy array</span>
+np_array = np.array([1, 2, 3])
+x_np = torch.from_numpy(np_array)
+print(<span class="s">"x_np:"</span>, x_np)</code></pre>
+
+      <h3>Attributes of a tensor</h3>
+<pre><code>tensor = torch.tensor([[1, 2, 3], [3, 4, 5]])
+
+print(f<span class="s">"Shape of tensor: {tensor.shape}"</span>)
+print(f<span class="s">"Datatype of tensor: {tensor.dtype}"</span>)
+print(f<span class="s">"Device tensor is stored on: {tensor.device}"</span>)</code></pre>
+
+      <h3>Operations on tensors</h3>
+<pre><code><span class="c"># Move the tensor to GPU if available</span>
+<span class="k">if</span> torch.cuda.is_available():
+    tensor = tensor.to(<span class="s">"cuda"</span>)
+
+<span class="c"># Standard numpy-like indexing and slicing</span>
+tensor = torch.tensor([[1, 2, 3], [3, 4, 5]])
+print(<span class="s">"First row: "</span>, tensor[0])
+print(<span class="s">"First column: "</span>, tensor[:, 0])</code></pre>
+
+<pre><code><span class="c"># Matrix multiplication</span>
+tensor = torch.ones(3, 3)
+y1 = tensor @ tensor.T
+y2 = tensor.matmul(tensor.T)
+print(<span class="s">"y1: "</span>, y1)
+print(<span class="s">"y2: "</span>, y2)</code></pre>
+
+<pre><code><span class="c"># Element-wise product</span>
+z1 = tensor * tensor
+z2 = tensor.mul(tensor)
+print(<span class="s">"z1: "</span>, z1)
+print(<span class="s">"z2: "</span>, z2)</code></pre>
+
+<pre><code><span class="c"># Common functions</span>
+a = torch.rand(2, 4) * 2 - 1
+print(<span class="s">'Common functions:'</span>)
+print(torch.abs(a))
+print(torch.ceil(a))
+print(torch.floor(a))
+print(torch.clamp(a, -0.5, 0.5))
+
+<span class="c"># Reshape</span>
+a = torch.arange(4.)
+a_reshaped = torch.reshape(a, (2, 2))
+b = torch.tensor([[0, 1], [2, 3]])
+b_reshaped = torch.reshape(b, (-1,))
+print(<span class="s">"a_reshaped"</span>, a_reshaped)
+print(<span class="s">"b_reshaped"</span>, b_reshaped)</code></pre>
+
+      <h3>Tensor broadcasting</h3>
+<pre><code>x1 = torch.tensor([[1, 2, 3], [3, 4, 5]])
+x2 = torch.tensor([2, 2, 2])
+doubled = x1 * x2
+
+print(doubled)</code></pre>
+
+      <h2 id="autodiff">2. Automatic Differentiation</h2>
+      <ul>
+        <li>Instead of computing backpropagation manually, an autodiff system performs backprop in a completely mechanical way.</li>
+        <li>An autodiff system will convert the program into a sequence of primitive operations which have specified routines for computing derivatives.</li>
+      </ul>
+
+      <h3>Distinction of the concepts</h3>
+      <ul>
+        <li><strong>Backpropagation</strong>: the mathematical algorithm we use to compute the gradient.</li>
+        <li><strong>Automatic differentiation (AutoDiff)</strong>: any software that implements backpropagation. Examples: Autograd, TensorFlow, PyTorch, JAX, etc.
+          <ul>
+            <li><strong>Reverse-mode AD</strong>: a method to get exact derivatives efficiently, by storing information as you go forward that you can reuse as you go backwards.</li>
+          </ul>
+        </li>
+      </ul>
+
+      <h3>2.1 Autograd</h3>
+      <p><a href="https://github.com/HIPS/autograd" target="_blank" rel="noopener noreferrer">Autograd</a> is a Python package for automatic differentiation. From the Autograd GitHub repository:</p>
+      <ul>
+        <li>Autograd can automatically differentiate native Python and NumPy code.</li>
+        <li>It can handle a large subset of Python's features, including loops, conditional statements (if/else), recursion, and closures.</li>
+        <li>It can also compute higher-order derivatives.</li>
+        <li>It uses reverse-mode differentiation (a.k.a. backpropagation) so it can efficiently take gradients of scalar-valued functions with respect to array-valued arguments.</li>
+      </ul>
+
+<pre><code><span class="k">import</span> autograd.numpy <span class="k">as</span> jnp  <span class="c"># Import thinly-wrapped numpy</span>
+<span class="k">from</span> autograd <span class="k">import</span> grad  <span class="c"># Basically the only autograd function you need</span>
+
+<span class="c"># Define a function like normal, using Python and (autograd's) NumPy</span>
+<span class="k">def</span> tanh(x):
+    y = jnp.exp(-x)
+    <span class="k">return</span> (1.0 - y) / (1.0 + y)
+
+<span class="c"># Create a *function* that computes the gradient of tanh</span>
+grad_tanh = grad(tanh)
+
+<span class="c"># Evaluate the gradient at x = 1.0</span>
+print(grad_tanh(1.0))
+
+<span class="c"># Compare to numeric gradient computed using finite differences</span>
+print((tanh(1.0001) - tanh(0.9999)) / 0.0002)</code></pre>
+
+      <h3>2.2 PyTorch automatic differentiation</h3>
+      <p>To compute the gradients of the loss function, PyTorch has a built-in differentiation engine called <code>torch.autograd</code> that traces the computation dynamically at runtime. It supports automatic computation of gradients for any computational graph.</p>
+      <ul>
+        <li>In the forward pass, <code>torch.autograd</code> runs the requested operation to compute the resulting tensor. For each primitive operation, data and the operation's gradient function are stored in the computation graph.</li>
+        <li>In the backward pass, <code>torch.autograd</code> computes the gradients using the gradient function of each primitive operation and accumulates gradients using the chain rule.</li>
+      </ul>
+      <p>Consider the one-layer neural network below:</p>
+
+<pre><code><span class="k">import</span> torch
+
+x = torch.ones(5)  <span class="c"># input tensor</span>
+y = torch.zeros(3)  <span class="c"># expected output</span>
+w = torch.randn(5, 3, requires_grad=<span class="k">True</span>)
+b = torch.randn(3, requires_grad=<span class="k">True</span>)
+z = torch.matmul(x, w) + b
+loss = torch.nn.functional.binary_cross_entropy_with_logits(z, y)</code></pre>
+
+      <p>The code above defines the following computation graph:</p>
+
+      <figure>
+        <img src="autograd-graph.png" alt="Computation graph of the one-layer network: x and w feed a matmul node, b joins at an add node producing z, which flows with y into the cross-entropy loss." loading="lazy" />
+        <figcaption>Image source: <a href="https://pytorch.org/tutorials/beginner/basics/autogradqs_tutorial.html" target="_blank" rel="noopener noreferrer">PyTorch autograd tutorial</a></figcaption>
+      </figure>
+
+      <p>We need to be able to compute the gradients of the loss function with respect to the variables <code>w</code> and <code>b</code>, so we've set the <code>requires_grad</code> property of those tensors.</p>
+      <p><strong>Computing gradients</strong>: to compute <code>dw</code> and <code>db</code>, we call <code>loss.backward()</code> and retrieve the values from <code>w.grad</code> and <code>b.grad</code>.</p>
+
+<pre><code>loss.backward()
+print(w.grad)
+print(b.grad)</code></pre>
+
+      <p><strong>Disabling gradient tracking</strong>: when we have trained the model and just want to run inference on the test data, we only want to do forward computations through the network. We can stop tracking computations by surrounding our computation code with a <code>torch.no_grad()</code> block. This helps reduce memory consumption. Another case where you might want to disable gradient tracking is to mark some parameters in the neural network as frozen parameters.</p>
+
+<pre><code>z = torch.matmul(x, w) + b
+print(z.requires_grad)
+
+<span class="k">with</span> torch.no_grad():
+    z = torch.matmul(x, w) + b
+print(z.requires_grad)</code></pre>
+
+      <h2 id="simple-net">3. Building a Simple Neural Network</h2>
+<pre><code><span class="k">import</span> torch.nn <span class="k">as</span> nn
+<span class="k">import</span> torch.optim <span class="k">as</span> optim
+
+<span class="c"># Define the neural network</span>
+<span class="k">class</span> SimpleNet(nn.Module):
+    <span class="k">def</span> __init__(self):
+        super(SimpleNet, self).__init__()
+        self.fc1 = nn.Linear(2, 8, bias=<span class="k">False</span>)
+        self.fc2 = nn.Linear(8, 1)
+
+    <span class="k">def</span> forward(self, x):
+        x = torch.relu(self.fc1(x))
+        x = self.fc2(x)
+        <span class="k">return</span> x
+
+net = SimpleNet()
+print(net)
+
+<span class="c"># Define the loss function and the optimizer</span>
+criterion = nn.MSELoss()
+optimizer = optim.SGD(net.parameters(), lr=0.01)
+
+<span class="c"># Prepare some dummy data and labels</span>
+data = torch.tensor([[1., 2.], [3., 4.]], dtype=torch.float32)
+labels = torch.tensor([[0.], [1.]], dtype=torch.float32)
+
+<span class="c"># Train the neural network</span>
+<span class="k">for</span> epoch <span class="k">in</span> range(500):
+    <span class="c"># Forward pass</span>
+    outputs = net(data)
+    loss = criterion(outputs, labels)
+
+    <span class="c"># IMPORTANT: Zero the gradients</span>
+    optimizer.zero_grad()
+
+    <span class="c"># Backward pass</span>
+    loss.backward()
+    optimizer.step()
+
+    <span class="c"># Print the loss for this epoch</span>
+    <span class="k">if</span> (epoch + 1) % 100 == 0:
+        print(f<span class="s">"Epoch [{epoch + 1}/{500}], Loss: {loss.item():.4f}"</span>)</code></pre>
+
+      <h2 id="data">4. PyTorch Datasets and DataLoaders</h2>
+      <p>Datasets and DataLoaders are essential components for handling data in PyTorch. A <code>Dataset</code> is a collection of data, and a <code>DataLoader</code> helps to efficiently load the data in batches during training.</p>
+      <p>In this example, we'll use the FashionMNIST dataset, which contains 60,000 training images and 10,000 testing images of 10 different clothing items.</p>
+
+<pre><code><span class="k">import</span> torchvision
+<span class="k">import</span> torchvision.transforms <span class="k">as</span> transforms
+
+<span class="c"># Define data transformations</span>
+transform = transforms.Compose([
+    transforms.Resize(28),
+    transforms.ToTensor(),
+    transforms.Normalize((0.5,), (0.5,))
+])
+
+<span class="c"># Load the FashionMNIST dataset</span>
+train_dataset = torchvision.datasets.FashionMNIST(
+    root=<span class="s">'./data'</span>, train=<span class="k">True</span>, download=<span class="k">True</span>, transform=transform
+)
+
+test_dataset = torchvision.datasets.FashionMNIST(
+    root=<span class="s">'./data'</span>, train=<span class="k">False</span>, download=<span class="k">True</span>, transform=transform
+)
+
+<span class="c"># Create DataLoaders for train and test datasets</span>
+train_loader = torch.utils.data.DataLoader(
+    train_dataset, batch_size=512, shuffle=<span class="k">True</span>, num_workers=2
+)
+
+test_loader = torch.utils.data.DataLoader(
+    test_dataset, batch_size=512, shuffle=<span class="k">False</span>, num_workers=2
+)
+
+print(<span class="s">"Num training examples: {}"</span>.format(len(train_dataset)))
+print(<span class="s">"Num test examples: {}"</span>.format(len(test_dataset)))
+
+<span class="c"># List of class labels</span>
+classes = [
+    <span class="s">'T-shirt/top'</span>, <span class="s">'Trouser'</span>, <span class="s">'Pullover'</span>, <span class="s">'Dress'</span>, <span class="s">'Coat'</span>,
+    <span class="s">'Sandal'</span>, <span class="s">'Shirt'</span>, <span class="s">'Sneaker'</span>, <span class="s">'Bag'</span>, <span class="s">'Ankle boot'</span>
+]</code></pre>
+
+      <h2 id="visualize">5. Visualizing Examples from the FashionMNIST Dataset</h2>
+<pre><code><span class="k">import</span> matplotlib.pyplot <span class="k">as</span> plt
+<span class="k">import</span> numpy <span class="k">as</span> np
+
+<span class="c"># Function to unnormalize and display an image</span>
+<span class="k">def</span> imshow(img):
+    img = img / 2 + 0.5  <span class="c"># Unnormalize</span>
+    npimg = img.numpy()
+    plt.imshow(np.transpose(npimg, (1, 2, 0)))
+    plt.show()
+
+<span class="c"># Get a batch of training data</span>
+dataiter = iter(train_loader)
+images, labels = next(dataiter)
+
+<span class="c"># Display the images in a grid along with their labels</span>
+imshow(torchvision.utils.make_grid(images[:16]))
+print(<span class="s">" -- "</span>.join(f<span class="s">"{classes[labels[j]]}"</span> <span class="k">for</span> j <span class="k">in</span> range(8)))
+print(<span class="s">" -- "</span>.join(f<span class="s">"{classes[labels[j]]}"</span> <span class="k">for</span> j <span class="k">in</span> range(8, 16)))</code></pre>
+
+      <p>With the dataset loaded and the DataLoader created, we can now train our neural network using the FashionMNIST dataset. Let's modify our previous <code>SimpleNet</code> example to handle 28&times;28 images and 10 output classes.</p>
+
+      <h2 id="cpu">6. Training on the CPU = Slow!</h2>
+<pre><code><span class="k">import</span> torch.nn.functional <span class="k">as</span> F
+
+<span class="c"># Define the neural network for FashionMNIST</span>
+<span class="k">class</span> FashionMNISTNet(nn.Module):
+    <span class="k">def</span> __init__(self):
+        super(FashionMNISTNet, self).__init__()
+        self.conv1 = nn.Conv2d(1, 16, 3)
+        self.pool = nn.MaxPool2d(2, 2)
+        self.conv2 = nn.Conv2d(16, 32, 3)
+        self.fc1 = nn.Linear(32 * 5 * 5, 128)
+        self.fc2 = nn.Linear(128, 64)
+        self.fc3 = nn.Linear(64, 10)
+
+    <span class="k">def</span> forward(self, x):
+        x = self.pool(F.relu(self.conv1(x)))
+        x = self.pool(F.relu(self.conv2(x)))
+        x = x.view(-1, 32 * 5 * 5)
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
+        <span class="k">return</span> x
+
+<span class="c"># Create an instance of the neural network</span>
+net = FashionMNISTNet()
+print(net)
+
+<span class="c"># Define the loss function and the optimizer</span>
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.SGD(net.parameters(), lr=0.01, momentum=0.9)
+
+<span class="c"># Train the neural network using the FashionMNIST dataset</span>
+num_epochs = 5
+<span class="k">for</span> epoch <span class="k">in</span> range(num_epochs):
+    running_loss = 0.0
+    <span class="k">for</span> i, (inputs, labels) <span class="k">in</span> enumerate(train_loader, 0):
+        <span class="c"># Zero the gradients</span>
+        optimizer.zero_grad()
+
+        <span class="c"># Forward pass</span>
+        outputs = net(inputs)
+
+        <span class="c"># Compute the loss</span>
+        loss = criterion(outputs, labels)
+
+        <span class="c"># Backward pass</span>
+        loss.backward()
+        optimizer.step()
+
+        <span class="c"># Update the running loss</span>
+        running_loss += loss.item()
+
+    <span class="c"># Print the average loss for this epoch</span>
+    avg_loss = running_loss / (i + 1)
+    print(f<span class="s">"Epoch [{epoch + 1}/{num_epochs}], Loss: {avg_loss:.4f}"</span>)
+print(<span class="s">"Training finished."</span>)</code></pre>
+
+      <h2 id="gpu">7. Training on the GPU = Faster!</h2>
+      <p>The network is identical — the key additions are checking for a GPU, moving the model to the device once, and moving each batch of inputs and labels to the device inside the training loop.</p>
+<pre><code><span class="c"># Check if GPU is available</span>
+device = torch.device(<span class="s">"cuda"</span> <span class="k">if</span> torch.cuda.is_available() <span class="k">else</span> <span class="s">"cpu"</span>)
+print(<span class="s">"Using device:"</span>, device)
+
+<span class="c"># Create an instance of the neural network</span>
+net = FashionMNISTNet()
+
+<span class="c"># Move the model to the GPU if available</span>
+net.to(device)
+
+<span class="c"># Define the loss function and the optimizer</span>
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.SGD(net.parameters(), lr=0.01, momentum=0.9)
+
+<span class="c"># Train the neural network using the FashionMNIST dataset</span>
+num_epochs = 5
+<span class="k">for</span> epoch <span class="k">in</span> range(num_epochs):
+    running_loss = 0.0
+    <span class="k">for</span> i, (inputs, labels) <span class="k">in</span> enumerate(train_loader, 0):
+
+        <span class="c"># Move the inputs and labels to the GPU if available</span>
+        inputs = inputs.to(device)
+        labels = labels.to(device)
+
+        <span class="c"># Zero the gradients</span>
+        optimizer.zero_grad()
+
+        <span class="c"># Forward pass</span>
+        outputs = net(inputs)
+
+        <span class="c"># Compute the loss</span>
+        loss = criterion(outputs, labels)
+
+        <span class="c"># Backward pass</span>
+        loss.backward()
+        optimizer.step()
+
+        <span class="c"># Update the running loss</span>
+        running_loss += loss.item()
+
+    <span class="c"># Print the average loss for this epoch</span>
+    avg_loss = running_loss / (i + 1)
+    print(f<span class="s">"Epoch [{epoch + 1}/{num_epochs}], Loss: {avg_loss:.4f}"</span>)
+print(<span class="s">"Training finished."</span>)</code></pre>
+
+      <p>Now that we have trained our neural network, let's evaluate its performance on the test dataset.</p>
+
+<pre><code><span class="c"># Test the neural network</span>
+correct = 0
+total = 0
+
+<span class="c"># Set the model to evaluation mode</span>
+net.eval()
+
+<span class="c"># Disable gradient calculation</span>
+<span class="k">with</span> torch.no_grad():
+    <span class="k">for</span> inputs, labels <span class="k">in</span> test_loader:
+
+        <span class="c"># Move the inputs and labels to the GPU if available</span>
+        inputs = inputs.to(device)
+        labels = labels.to(device)
+
+        <span class="c"># Forward pass</span>
+        outputs = net(inputs)
+
+        <span class="c"># Get the predicted class</span>
+        _, predicted = torch.max(outputs.data, 1)
+
+        <span class="c"># Update the total number of samples and correct predictions</span>
+        total += labels.size(0)
+        correct += (predicted == labels).sum().item()
+
+<span class="c"># Calculate the accuracy</span>
+accuracy = 100 * correct / total
+print(f<span class="s">"Accuracy: {accuracy:.2f}%"</span>)</code></pre>
+
+      <p>Not bad! Let's inspect the number of total parameters and trainable parameters in the model:</p>
+
+<pre><code>total_params = sum(p.numel() <span class="k">for</span> p <span class="k">in</span> net.parameters())
+print(f<span class="s">'{total_params:,} total parameters.'</span>)
+total_trainable_params = sum(
+    p.numel() <span class="k">for</span> p <span class="k">in</span> net.parameters() <span class="k">if</span> p.requires_grad)
+print(f<span class="s">'{total_trainable_params:,} training parameters.'</span>)</code></pre>
+
+      <p>Now that we have a trained model, if we want to adapt the model to another dataset with only 5 classes, we can freeze earlier layers and only train on the last fully-connected layer.</p>
+
+<pre><code><span class="c"># Freeze earlier layers</span>
+<span class="k">for</span> param <span class="k">in</span> net.parameters():
+    param.requires_grad = <span class="k">False</span>
+
+n_inputs = net.fc3.in_features
+n_classes = 5
+net.fc3 = nn.Linear(n_inputs, n_classes)
+total_params = sum(p.numel() <span class="k">for</span> p <span class="k">in</span> net.parameters())
+print(f<span class="s">'{total_params:,} total parameters.'</span>)
+total_trainable_params = sum(
+    p.numel() <span class="k">for</span> p <span class="k">in</span> net.parameters() <span class="k">if</span> p.requires_grad)
+print(f<span class="s">'{total_trainable_params:,} training parameters.'</span>)</code></pre>
+
+      <h2 id="pretrained">8. Pre-trained Weights</h2>
+      <p>PyTorch has many pretrained models we can use, all trained on ImageNet, which consists of millions of images across 1000 categories. We want to freeze the early layers of these pretrained models and replace the classification module with our own. See the <a href="https://pytorch.org/vision/stable/models.html" target="_blank" rel="noopener noreferrer">PyTorch API for pre-trained weights</a>.</p>
+      <p>The approach for using a pre-trained image recognition model is well-established:</p>
+      <ol>
+        <li>Load in pre-trained weights from a network trained on a large dataset.</li>
+        <li>Freeze all the weights in the lower (convolutional) layers — the layers to freeze can be adjusted depending on similarity of the task to the large training dataset.</li>
+        <li>Replace the classifier (fully connected) part of the network with a custom classifier, with the number of outputs set equal to the number of classes.</li>
+        <li>Train only the custom classifier layers for the task, optimizing the classifier for the smaller dataset.</li>
+      </ol>
+      <p>We will demonstrate an example of loading a pre-trained ResNet model:</p>
+
+<pre><code><span class="k">from</span> torchvision <span class="k">import</span> models
+
+model = models.resnet50(pretrained=<span class="k">True</span>)
+
+print(model)
+
+<span class="k">for</span> param <span class="k">in</span> model.parameters():
+    param.requires_grad = <span class="k">False</span>
+
+n_inputs = model.fc.in_features
+model.fc = nn.Sequential(
+    nn.Linear(n_inputs, 256), nn.ReLU(), nn.Dropout(0.2),
+    nn.Linear(256, n_classes), nn.LogSoftmax(dim=1))</code></pre>
+
+    </article>
+
+    <footer class="footer">
+      <span>Rajat Ghosh, Ph.D.</span>
+      <a href="../">rajatghosh.me</a>
+      <a href="mailto:rajat.ghosh11@gmail.com">rajat.ghosh11@gmail.com</a>
+    </footer>
+  </div>
+</body>
+</html>

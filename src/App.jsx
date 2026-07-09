@@ -12,6 +12,7 @@ import awardsHtml from "../component/awards.html?raw";
 import talksHtml from "../component/talks.html?raw";
 import blogsHtml from "../component/blogs.html?raw";
 import teachingHtml from "../component/teaching.html?raw";
+import tutorialsHtml from "../component/tutorials.html?raw";
 import professionalServicesHtml from "../component/professional-services.html?raw";
 
 const CONSULTING_FORM_ENDPOINT = import.meta.env.VITE_CONSULTING_FORM_ENDPOINT;
@@ -34,6 +35,7 @@ const navItems = [
   ["#talks", "Talks"],
   ["#blogs", "Blogs"],
   ["#teaching", "Teaching"],
+  ["#tutorials", "Tutorials"],
   ["#professional-services", "Services"],
 ];
 
@@ -50,6 +52,7 @@ const sectionModules = [
   talksHtml,
   blogsHtml,
   teachingHtml,
+  tutorialsHtml,
   professionalServicesHtml,
 ];
 
