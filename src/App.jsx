@@ -83,6 +83,7 @@ function Header() {
           <a key={href} href={href}>{label}</a>
         ))}
         <a href="resume_rajat-ghosh.pdf" target="_blank" rel="noopener noreferrer">Resume</a>
+        <a href="omscs-cn-exam2.html" target="_blank" rel="noopener noreferrer">CN Study Deck</a>
       </nav>
     </header>
   );
