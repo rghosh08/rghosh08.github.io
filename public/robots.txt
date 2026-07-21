@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+Disallow: /omscs-cn-exam2.html
+Disallow: /omscs-cn-exam2.apkg
 
 Sitemap: https://rajatghosh.me/sitemap.xml

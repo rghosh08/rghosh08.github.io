@@ -22,6 +22,24 @@ const CONSULTING_FORM_ENDPOINT = import.meta.env.VITE_CONSULTING_FORM_ENDPOINT;
 const CAL_LINK = import.meta.env.VITE_CAL_LINK;
 const CAL_NAMESPACE = "consultation";
 
+// Gated "My Resources" chip. This site is fully static (GitHub Pages, no
+// server), so this is obfuscation, not real access control: the resource files
+// still live at fixed public URLs. We store only a SHA-256 of `username:password`
+// so the plaintext credential never ships in the bundle, and keep the resources
+// out of sitemap.xml / robots.txt so they are not indexed.
+const RESOURCES_HASH =
+  "5355a870efaa9a533658b9b77e977dfe3b11bcdf7669bf802d2f03a6c2c89caf";
+const RESOURCES = [
+  ["omscs-cn-exam2.html", "CN Study Deck"],
+];
+
+async function sha256Hex(str) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
 const navItems = [
   ["#highlights", "Highlights"],
   ["#experience", "Experience"],
@@ -62,6 +80,119 @@ function extractPageContent(html) {
   return content ? content.innerHTML : html;
 }
 
+function ResourcesChip() {
+  const [open, setOpen] = React.useState(false);
+  const [unlocked, setUnlocked] = React.useState(
+    () => sessionStorage.getItem("resources-unlocked") === "1",
+  );
+  const [error, setError] = React.useState("");
+  const [checking, setChecking] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!open) return;
+    const onKey = (e) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    setChecking(true);
+    setError("");
+
+    const data = new FormData(event.currentTarget);
+    const username = (data.get("username") || "").trim();
+    const password = data.get("password") || "";
+    const hash = await sha256Hex(`${username}:${password}`);
+
+    if (hash === RESOURCES_HASH) {
+      sessionStorage.setItem("resources-unlocked", "1");
+      setUnlocked(true);
+    } else {
+      setError("Incorrect username or password.");
+    }
+    setChecking(false);
+  }
+
+  return (
+    <>
+      <button
+        type="button"
+        className="nav-chip"
+        aria-haspopup="dialog"
+        onClick={() => setOpen(true)}
+      >
+        My Resources
+      </button>
+
+      {open && (
+        <div
+          className="resource-modal-backdrop"
+          role="presentation"
+          onClick={() => setOpen(false)}
+        >
+          <div
+            className="resource-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label="My Resources"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="resource-modal-close"
+              aria-label="Close"
+              onClick={() => setOpen(false)}
+            >
+              &times;
+            </button>
+            <h2>My Resources</h2>
+
+            {unlocked ? (
+              <ul className="resource-list">
+                {RESOURCES.map(([href, label]) => (
+                  <li key={href}>
+                    <a href={href} target="_blank" rel="noopener noreferrer">
+                      {label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <form className="resource-form" onSubmit={handleSubmit}>
+                <p>Enter your credentials to view protected resources.</p>
+                <label>
+                  Username
+                  <input type="text" name="username" autoComplete="off" required />
+                </label>
+                <label>
+                  Password
+                  <input
+                    type="password"
+                    name="password"
+                    autoComplete="off"
+                    required
+                  />
+                </label>
+                <button className="button primary" type="submit" disabled={checking}>
+                  {checking ? "Checking…" : "Unlock"}
+                </button>
+                {error && (
+                  <p className="form-status error" role="alert">
+                    {error}
+                  </p>
+                )}
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 function Header() {
   return (
     <header role="banner" className="hero">
@@ -83,7 +214,7 @@ function Header() {
           <a key={href} href={href}>{label}</a>
         ))}
         <a href="resume_rajat-ghosh.pdf" target="_blank" rel="noopener noreferrer">Resume</a>
-        <a href="omscs-cn-exam2.html" target="_blank" rel="noopener noreferrer">CN Study Deck</a>
+        <ResourcesChip />
       </nav>
     </header>
   );
