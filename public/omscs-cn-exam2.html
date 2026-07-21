@@ -87,8 +87,13 @@
     padding:4px 10px;border-radius:6px;background:var(--accent-soft);color:var(--accent-ink)}
   .chip.tf{background:var(--good-soft);color:var(--good)}
   .chip.card{background:var(--surface2);color:var(--muted)}
-  .idx{font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;color:var(--faint);font-variant-numeric:tabular-nums}
+  .idx{font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;color:var(--faint);font-variant-numeric:tabular-nums;display:inline-flex;align-items:center;gap:6px}
   .idx b{color:var(--ink)}
+  .jumpin{font-family:var(--mono);font-size:.72rem;width:3.4em;text-align:center;color:var(--ink);
+    background:var(--surface2);border:1px solid var(--line);border-radius:6px;padding:3px 4px;
+    font-variant-numeric:tabular-nums;-moz-appearance:textfield;appearance:textfield}
+  .jumpin::-webkit-outer-spin-button,.jumpin::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .jumpin:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
 
   .q{font-size:clamp(1.02rem,2.4vw,1.16rem);line-height:1.62;color:var(--ink)}
   .q br{content:"";display:block;margin-top:.28em}
@@ -191,7 +196,7 @@
     <div class="card" id="card">
       <div class="card-top">
         <span class="chip" id="chip">MCQ</span>
-        <span class="idx"><b id="pos">1</b> / <span id="total">0</span></span>
+        <span class="idx"><input id="jump" class="jumpin" type="number" min="1" inputmode="numeric" aria-label="Go to question number" title="Type a number and press Enter to jump (G)"> / <span id="total">0</span></span>
       </div>
       <div class="q" id="q"></div>
 
@@ -219,7 +224,7 @@
 
   <div class="shortcuts">
     <span><b>Space</b> reveal / next</span><span><b>1</b> again</span><span><b>2</b> got it</span>
-    <span><b>←/→</b> prev / next</span><span><b>S</b> shuffle</span>
+    <span><b>←/→</b> prev / next</span><span><b>S</b> shuffle</span><span><b>G</b> go to #</span>
   </div>
 
   <div class="lb" id="lb"><img id="lbimg" alt=""></div>
@@ -239,7 +244,7 @@ let revealed = false;
 
 const $ = id => document.getElementById(id);
 const chip=$("chip"), q=$("q"), answer=$("answer"), grade=$("grade"),
-      revealRow=$("revealRow"), fill=$("fill"), posEl=$("pos"), totalEl=$("total");
+      revealRow=$("revealRow"), fill=$("fill"), jumpEl=$("jump"), totalEl=$("total");
 
 function activeOrder(){
   return againOnly ? order.filter(i => status[i] !== "good") : order;
@@ -266,7 +271,8 @@ function render(){
   chip.className = "chip " + (t==="TF"?"tf": (t==="MCQ"?"":"card"));
   q.innerHTML = card.q;
   answer.innerHTML = card.a;
-  posEl.textContent = pos+1;
+  jumpEl.value = pos+1;
+  jumpEl.max = ord.length;
   setRevealed(false);
   $("prev").disabled = pos===0;
   $("next").disabled = pos===ord.length-1;
@@ -297,6 +303,13 @@ function advance(){
 }
 function next(){ const ord=activeOrder(); if(pos<ord.length-1){pos++; render();} }
 function prev(){ if(pos>0){pos--; render();} }
+function goTo(n){
+  const ord = activeOrder();
+  if(!ord.length) return;
+  if(isNaN(n)){ jumpEl.value = pos+1; return; }
+  pos = Math.max(1, Math.min(ord.length, Math.round(n))) - 1;
+  render();
+}
 function shuffle(){
   for(let i=order.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [order[i],order[j]]=[order[j],order[i]]; }
   pos=0; render();
@@ -315,6 +328,9 @@ $("next").onclick = next;
 $("prev").onclick = prev;
 $("shuffle").onclick = shuffle;
 $("restart").onclick = restart;
+jumpEl.onkeydown = e=>{ if(e.key==="Enter"){ e.preventDefault(); goTo(parseInt(jumpEl.value,10)); jumpEl.blur(); } };
+jumpEl.onchange = ()=>goTo(parseInt(jumpEl.value,10));
+jumpEl.onfocus = ()=>jumpEl.select();
 $("againOnly").onclick = ()=>{ againOnly=!againOnly; $("againOnly").setAttribute("aria-pressed",String(againOnly)); pos=0; render(); };
 $("againOnly").onkeydown = e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); $("againOnly").click(); } };
 
@@ -340,6 +356,7 @@ lb.onclick=()=>lb.classList.remove("on");
 // keyboard
 document.addEventListener("keydown", e=>{
   if(lb.classList.contains("on") && e.key==="Escape"){ lb.classList.remove("on"); return; }
+  if(e.target===jumpEl){ if(e.key==="Escape") jumpEl.blur(); return; }
   if(e.metaKey||e.ctrlKey||e.altKey) return;
   const k=e.key.toLowerCase();
   if(k===" "||e.key==="Enter"){ e.preventDefault(); if(!revealed) reveal(); else next(); }
@@ -348,6 +365,7 @@ document.addEventListener("keydown", e=>{
   else if(k==="1"){ if(revealed) grade_("again"); }
   else if(k==="2"){ if(revealed) grade_("good"); }
   else if(k==="s"){ shuffle(); }
+  else if(k==="g"){ e.preventDefault(); jumpEl.focus(); }
 });
 
 render();
