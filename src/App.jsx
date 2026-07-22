@@ -31,6 +31,11 @@ const RESOURCES_HASH =
   "5355a870efaa9a533658b9b77e977dfe3b11bcdf7669bf802d2f03a6c2c89caf";
 const RESOURCES = [
   ["omscs-cn-exam2.html", "CN Study Deck"],
+  ["cn-module-07-08-question-pool.pdf", "CN Modules 7–8 — SDN (Question Pool PDF)"],
+  ["cn-module-09-question-pool.pdf", "CN Module 9 — Internet Security (Question Pool PDF)"],
+  ["cn-module-10-question-pool.pdf", "CN Module 10 — Surveillance & Censorship (Question Pool PDF)"],
+  ["cn-module-11-question-pool.pdf", "CN Module 11 — Video & Multimedia (Question Pool PDF)"],
+  ["cn-module-12-question-pool.pdf", "CN Module 12 — CDNs & Overlay Networks (Question Pool PDF)"],
 ];
 
 async function sha256Hex(str) {

@@ -2,5 +2,10 @@ User-agent: *
 Allow: /
 Disallow: /omscs-cn-exam2.html
 Disallow: /omscs-cn-exam2.apkg
+Disallow: /cn-module-07-08-question-pool.pdf
+Disallow: /cn-module-09-question-pool.pdf
+Disallow: /cn-module-10-question-pool.pdf
+Disallow: /cn-module-11-question-pool.pdf
+Disallow: /cn-module-12-question-pool.pdf
 
 Sitemap: https://rajatghosh.me/sitemap.xml
