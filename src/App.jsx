@@ -222,6 +222,14 @@ function Header() {
         ))}
         <a href="resume_rajat-ghosh.pdf" target="_blank" rel="noopener noreferrer">Resume</a>
         <a href="#media" className="nav-chip">Media</a>
+        <a
+          href="https://substack.com/@rajatghosh1?utm_source=user-menu"
+          className="nav-chip"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Substack
+        </a>
         <ResourcesChip />
       </nav>
     </header>
