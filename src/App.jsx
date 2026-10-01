@@ -55,7 +55,6 @@ const navItems = [
   ["#arxiv", "arXiv"],
   ["#mlcommons", "MLCommons"],
   ["#patents", "Patents"],
-  ["#software-packages", "Software"],
   ["#awards", "Awards"],
   ["#talks", "Talks"],
   ["#blogs", "Blogs"],
@@ -223,6 +222,7 @@ function Header() {
           <a key={href} href={href}>{label}</a>
         ))}
         <a href="resume_rajat-ghosh.pdf" target="_blank" rel="noopener noreferrer">Resume</a>
+        <a href="#software-packages" className="nav-chip">Authored Software Packages</a>
         <a href="#media" className="nav-chip">Media</a>
         <a href="#visualization" className="nav-chip">Visualization</a>
         <a
