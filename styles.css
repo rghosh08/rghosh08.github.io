@@ -769,6 +769,43 @@ li { margin: 0.28rem 0; }
 
 .sep { display: none; }
 
+/* ---------- Visualization ---------- */
+
+.viz-featured {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+}
+
+.viz-meta {
+  padding: 16px 18px 18px;
+}
+
+.viz-meta h3 {
+  margin: 0 0 8px;
+  font-size: 1.02rem;
+  font-weight: 740;
+  line-height: 1.3;
+}
+
+.viz-meta p {
+  margin: 0 0 12px;
+  color: var(--ink-soft);
+  font-size: 0.93rem;
+  line-height: 1.55;
+}
+
+.viz-embed {
+  display: block;
+  width: 100%;
+  height: 780px;
+  border: 0;
+  border-top: 1px solid var(--line);
+  background: #f8f8f5;
+}
+
 /* ---------- Footer ---------- */
 
 .site-footer {
@@ -796,6 +833,7 @@ li { margin: 0.28rem 0; }
   .headshot { width: 150px; height: 150px; }
   .highlight-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .consulting-section { grid-template-columns: 1fr; }
+  .viz-embed { height: 980px; }
 }
 
 @media (max-width: 700px){
@@ -842,4 +880,5 @@ li { margin: 0.28rem 0; }
   }
   .highlight-grid { grid-template-columns: 1fr; }
   .consulting-form { grid-template-columns: 1fr; }
+  .viz-embed { height: 980px; }
 }

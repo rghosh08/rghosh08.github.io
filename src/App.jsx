@@ -8,6 +8,7 @@ import mlcommonsHtml from "../component/mlcommons.html?raw";
 import doctoralPublicationsHtml from "../component/doctoral-publications.html?raw";
 import patentsHtml from "../component/patents.html?raw";
 import mediaHtml from "../component/media.html?raw";
+import visualizationHtml from "../component/visualization.html?raw";
 import softwarePackagesHtml from "../component/software-packages.html?raw";
 import awardsHtml from "../component/awards.html?raw";
 import talksHtml from "../component/talks.html?raw";
@@ -72,6 +73,7 @@ const sectionModules = [
   doctoralPublicationsHtml,
   patentsHtml,
   mediaHtml,
+  visualizationHtml,
   softwarePackagesHtml,
   awardsHtml,
   talksHtml,
@@ -222,6 +224,7 @@ function Header() {
         ))}
         <a href="resume_rajat-ghosh.pdf" target="_blank" rel="noopener noreferrer">Resume</a>
         <a href="#media" className="nav-chip">Media</a>
+        <a href="#visualization" className="nav-chip">Visualization</a>
         <a
           href="https://substack.com/@rajatghosh1?utm_source=user-menu"
           className="nav-chip"
