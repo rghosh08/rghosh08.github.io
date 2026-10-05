@@ -110,21 +110,23 @@
 // Same gate as the "My Resources" chip on the home page: a SHA-256 of
 // `username:password`, remembered per tab. This is obfuscation on a static
 // site, not real access control. The local app (jev-app/app.py) skips it.
+// Unlocking also keeps an access token for this tab. It is a different hash of
+// the same credentials, which the relay checks before using its saved API key.
+const ACCESS_KEY = "jev-access";
 const GATE_HASH = "5355a870efaa9a533658b9b77e977dfe3b11bcdf7669bf802d2f03a6c2c89caf";
 (function gate() {
   const app = document.getElementById("app"), form = document.getElementById("gate");
   const isLocal = ["127.0.0.1", "localhost", "[::1]"].includes(location.hostname);
   let unlocked = isLocal;
-  try { unlocked = unlocked || sessionStorage.getItem("resources-unlocked") === "1"; } catch {}
+  try { unlocked = unlocked || Boolean(sessionStorage.getItem(ACCESS_KEY)); } catch {}
   if (unlocked) { app.hidden = false; return; }
   form.hidden = false;
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const text = document.getElementById("gateuser").value.trim() + ":" + document.getElementById("gatepass").value;
-    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
-    const hash = Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
-    if (hash !== GATE_HASH) { document.getElementById("gatestatus").textContent = "Incorrect username or password."; return; }
-    try { sessionStorage.setItem("resources-unlocked", "1"); } catch {}
+    const sha = async (s) => Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)))).map((b) => b.toString(16).padStart(2, "0")).join("");
+    if ((await sha(text)) !== GATE_HASH) { document.getElementById("gatestatus").textContent = "Incorrect username or password."; return; }
+    try { sessionStorage.setItem("resources-unlocked", "1"); sessionStorage.setItem(ACCESS_KEY, await sha("jev-relay:" + text)); } catch {}
     form.hidden = true; app.hidden = false;
   });
 })();
@@ -248,10 +250,10 @@ const OPENROUTER_URL = "https://openrouter.ai/api/v1/systemone";
 const RELAY_URL = "https://jev-relay-rajatghosh.netlify.app/systemone";
 let localServer = false;
 
-async function postDirect(url, apiKey, model, state, questions) {
+async function postDirect(url, auth, model, state, questions) {
   const res = await fetch(url, {
     method: "POST",
-    headers: { Authorization: "Bearer " + apiKey, "Content-Type": "application/json" },
+    headers: { ...auth, "Content-Type": "application/json" },
     body: JSON.stringify({ model, state, questions })
   });
   let result; const text = await res.text();
@@ -262,11 +264,13 @@ async function postDirect(url, apiKey, model, state, questions) {
 async function send(provider, apiKey, model, state, questions) {
   if (provider === "openrouter") {
     if (!apiKey) return { error: "Enter your OpenRouter API key." };
-    return postDirect(OPENROUTER_URL, apiKey, model, state, questions);
+    return postDirect(OPENROUTER_URL, { Authorization: "Bearer " + apiKey }, model, state, questions);
   }
   if (!localServer) {
-    if (!apiKey) return { error: "Enter your TypeSafe API key." };
-    return postDirect(RELAY_URL, apiKey, model, state, questions);
+    // With no key typed, the relay uses its saved key for an unlocked tab.
+    let token = ""; try { token = sessionStorage.getItem(ACCESS_KEY) || ""; } catch {}
+    if (!apiKey && !token) return { error: "Enter your TypeSafe API key." };
+    return postDirect(RELAY_URL, apiKey ? { Authorization: "Bearer " + apiKey } : { "X-Jev-Access": token }, model, state, questions);
   }
   const res = await fetch("api/run", {
     method: "POST",
@@ -280,10 +284,11 @@ async function send(provider, apiKey, model, state, questions) {
 function updateProviderNote() {
   const ts = $("provider").value === "typesafe";
   $("providernote").textContent = ts
-    ? (localServer ? "Sent through the local app server to api.typesafe.ai." : "Sent through a relay to api.typesafe.ai, because TypeSafe blocks direct calls from websites. The relay does not log or store the key.")
+    ? (localServer ? "Sent through the local app server to api.typesafe.ai." : "Sent through a relay to api.typesafe.ai, because TypeSafe blocks direct calls from websites. A key typed here is not logged or stored.")
     : "Sent from your browser straight to openrouter.ai. Create a key at openrouter.ai/settings/keys.";
-  $("keyhint").textContent = ts && envKey ? "optional, TYPESAFE_API_KEY is set" : "";
-  $("key").placeholder = ts ? (envKey ? "Using TYPESAFE_API_KEY" : "TypeSafe API key") : "OpenRouter API key";
+  const saved = ts && !localServer;
+  $("keyhint").textContent = ts && envKey ? "optional, TYPESAFE_API_KEY is set" : saved ? "optional, a saved key is used when blank" : "";
+  $("key").placeholder = ts ? (envKey ? "Using TYPESAFE_API_KEY" : saved ? "Using the saved key" : "TypeSafe API key") : "OpenRouter API key";
 }
 let envKey = false;
 

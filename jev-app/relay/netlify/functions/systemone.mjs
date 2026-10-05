@@ -2,11 +2,23 @@
 //
 // TypeSafe's API rejects cross-origin browser calls, so the hosted page posts
 // here and this function forwards the request to TypeSafe with the caller's
-// own API key. The key is passed through in memory only: nothing is logged
-// or stored, and the relay holds no key of its own.
+// own API key, passed through in memory only. Nothing is logged or stored.
+//
+// A caller may instead send an X-Jev-Access token and no key. The token is
+// derived in the browser from the site's gate username and password. When it
+// matches JEV_ACCESS_TOKEN, the relay uses the key in JEV_API_KEY. Both are
+// Netlify environment variables and are never committed to the repository.
+import { createHash, timingSafeEqual } from "node:crypto";
+
 const UPSTREAM = "https://api.typesafe.ai/v1/systemone";
 const ALLOWED_ORIGINS = new Set(["https://rajatghosh.me", "https://www.rajatghosh.me"]);
 const MAX_BODY_BYTES = 1024 * 1024;
+
+const digest = (s) => createHash("sha256").update(s).digest();
+function hasAccess(token) {
+  const expected = process.env.JEV_ACCESS_TOKEN;
+  return Boolean(expected && token) && timingSafeEqual(digest(token), digest(expected));
+}
 
 const json = (status, body, headers) =>
   new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store", ...headers } });
@@ -17,15 +29,21 @@ export default async (req) => {
   const cors = {
     "Access-Control-Allow-Origin": origin,
     "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Authorization, Content-Type",
+    "Access-Control-Allow-Headers": "Authorization, Content-Type, X-Jev-Access",
     "Access-Control-Max-Age": "7200",
     Vary: "Origin",
   };
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
   if (req.method !== "POST") return json(405, { error: "Use POST." }, cors);
 
-  const auth = req.headers.get("authorization") || "";
-  if (!/^Bearer \S+$/.test(auth)) return json(401, { error: "Send your TypeSafe API key as a Bearer token." }, cors);
+  let auth = req.headers.get("authorization") || "";
+  if (!/^Bearer \S+$/.test(auth)) {
+    const token = req.headers.get("x-jev-access") || "";
+    if (!token) return json(401, { error: "Enter a TypeSafe API key." }, cors);
+    if (!hasAccess(token)) return json(403, { error: "Access was refused. Unlock the page again, or enter your own TypeSafe API key." }, cors);
+    if (!process.env.JEV_API_KEY) return json(503, { error: "No saved API key is configured on the relay. Enter your own TypeSafe API key." }, cors);
+    auth = "Bearer " + process.env.JEV_API_KEY;
+  }
 
   const text = await req.text();
   if (text.length > MAX_BODY_BYTES) return json(413, { error: "Request body is too large." }, cors);

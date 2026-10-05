@@ -119,6 +119,9 @@ function ResourcesChip({ label = "My Resources", resources = RESOURCES }) {
 
     if (hash === RESOURCES_HASH) {
       sessionStorage.setItem("resources-unlocked", "1");
+      // Jev Runner sends this to its relay, which checks it before using the
+      // saved API key. It is a different hash from RESOURCES_HASH on purpose.
+      sessionStorage.setItem("jev-access", await sha256Hex(`jev-relay:${username}:${password}`));
       setUnlocked(true);
     } else {
       setError("Incorrect username or password.");
