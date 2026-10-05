@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jev Runner</title>
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<style>
+  :root { --bg:#f6f7f9; --card:#fff; --ink:#1b1f24; --muted:#667085; --line:#d9dee5; --accent:#2f6fed; --bar:#2f6fed; --barbg:#e8edf5; --err:#b42318; --errbg:#fef3f2; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#12151a; --card:#1b2028; --ink:#e8ebf0; --muted:#98a2b3; --line:#2e3642; --accent:#6ea0ff; --bar:#6ea0ff; --barbg:#2a313c; --err:#ffb4ab; --errbg:#3a1f1d; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width:1100px; margin:0 auto; padding:24px 16px 48px; }
+  h1 { font-size:22px; margin:0 0 4px; }
+  .sub { color:var(--muted); margin:0 0 20px; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media (max-width:820px) { .grid { grid-template-columns:1fr; } }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px; }
+  label { display:block; font-weight:600; font-size:13px; margin:12px 0 4px; }
+  label:first-child { margin-top:0; }
+  .hint { font-weight:400; color:var(--muted); }
+  input, textarea, select { width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--ink); font:inherit; }
+  textarea { font:13px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; resize:vertical; }
+  .row { display:grid; grid-template-columns:2fr 1fr; gap:12px; }
+  .actions { display:flex; gap:10px; align-items:center; margin-top:14px; flex-wrap:wrap; }
+  button { padding:9px 18px; border-radius:8px; border:1px solid var(--line); background:var(--card); color:var(--ink); font:inherit; font-weight:600; cursor:pointer; }
+  button.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
+  button:disabled { opacity:.6; cursor:default; }
+  .status { color:var(--muted); font-size:13px; }
+  .error { background:var(--errbg); color:var(--err); border-radius:8px; padding:10px 12px; white-space:pre-wrap; word-break:break-word; }
+  .answer { border-top:1px solid var(--line); padding:12px 0; }
+  .answer:first-child { border-top:0; padding-top:0; }
+  .answer h3 { margin:0; font-size:15px; }
+  .tag { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:1px 8px; margin-left:6px; }
+  .q { color:var(--muted); font-size:13px; margin:2px 0 8px; }
+  .verdict { font-size:17px; font-weight:700; margin-bottom:6px; }
+  .verdict small { font-weight:400; color:var(--muted); font-size:13px; margin-left:6px; }
+  .bar { display:grid; grid-template-columns:minmax(90px,38%) 1fr 52px; gap:8px; align-items:center; font-size:13px; margin:3px 0; }
+  .bar .name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .bar .track { background:var(--barbg); border-radius:999px; height:8px; overflow:hidden; }
+  .bar .fill { background:var(--bar); height:100%; border-radius:999px; }
+  .bar .pct { text-align:right; font-variant-numeric:tabular-nums; color:var(--muted); }
+  details { margin-top:12px; }
+  summary { cursor:pointer; color:var(--muted); font-size:13px; }
+  pre { background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:10px; overflow:auto; font:12.5px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; margin:8px 0 0; }
+  .empty { color:var(--muted); }
+  .note { color:var(--muted); font-size:13px; margin:6px 0 0; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Jev Runner</h1>
+  <p class="sub">Send application state and typed questions to TypeSafe's Jev model, and read back typed answers with probabilities. Your API key stays in this tab and is sent only to the model provider.</p>
+
+  <div class="grid">
+    <form class="card" id="form" autocomplete="off">
+      <label for="provider">Key type</label>
+      <select id="provider">
+        <option value="openrouter">OpenRouter API key</option>
+        <option value="typesafe">TypeSafe API key</option>
+      </select>
+      <p class="note" id="providernote"></p>
+
+      <div class="row">
+        <div>
+          <label for="key">API key <span class="hint" id="keyhint"></span></label>
+          <input id="key" type="password" placeholder="API key" autocomplete="off" spellcheck="false">
+        </div>
+        <div>
+          <label for="model">Model</label>
+          <input id="model" value="jev-latest" spellcheck="false">
+        </div>
+      </div>
+
+      <label for="state">State <span class="hint">JSON object, or plain text</span></label>
+      <textarea id="state" rows="6" spellcheck="false"></textarea>
+
+      <label for="questions">Questions <span class="hint">JSON object, one entry per question</span></label>
+      <textarea id="questions" rows="22" spellcheck="false"></textarea>
+
+      <div class="actions">
+        <button class="primary" id="run" type="submit">Run Jev</button>
+        <button type="button" id="reset">Load example</button>
+        <span class="status" id="status"></span>
+      </div>
+    </form>
+
+    <div class="card">
+      <div id="output"><p class="empty">Answers appear here after a run. Press Cmd or Ctrl + Enter to run.</p></div>
+    </div>
+  </div>
+</main>
+
+<script>
+const EXAMPLE_STATE = { visitor_says: "My son wandered off near platform 4 and I can't find him. I also have two big suitcases." };
+const EXAMPLE_QUESTIONS = {
+  desk: {
+    type: "choice",
+    instructions: "Where should the info desk send the visitor?",
+    criteria: {
+      ticket_counter: "Buying, changing, or refunding tickets.",
+      lost_and_found: "Looking for something they lost.",
+      immediate_help: "An emergency, an injury, or a missing person."
+    }
+  },
+  urgency: {
+    type: "score",
+    instructions: "How urgent is the request of the visitor?",
+    criteria: [
+      "Not urgent at all.",
+      "Should be handled today.",
+      "Should be handled within the next few minutes.",
+      "Needs to be handled right now."
+    ]
+  },
+  needs_assistance: {
+    type: "noul",
+    instructions: "Does the visitor need a staff member to help them get around the station, for example because of a wheelchair, heavy luggage, or small children?"
+  }
+};
+
+const $ = (id) => document.getElementById(id);
+const pretty = (v) => JSON.stringify(v, null, 2);
+const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
+const pct = (p) => (p * 100).toFixed(p >= 0.0995 ? 0 : 1) + "%";
+
+function loadExample() {
+  $("state").value = pretty(EXAMPLE_STATE);
+  $("questions").value = pretty(EXAMPLE_QUESTIONS);
+}
+
+// Drafts live in sessionStorage only. The API key is never stored.
+function saveDraft() {
+  try { sessionStorage.setItem("jev-draft", JSON.stringify({ s: $("state").value, q: $("questions").value, m: $("model").value })); } catch {}
+}
+function restoreDraft() {
+  try {
+    const d = JSON.parse(sessionStorage.getItem("jev-draft"));
+    if (d && d.q) { $("state").value = d.s; $("questions").value = d.q; $("model").value = d.m || "jev-latest"; return true; }
+  } catch {}
+  return false;
+}
+
+function bar(name, p) {
+  const row = el("div", "bar");
+  const n = el("span", "name", name); n.title = name;
+  const track = el("div", "track"); const fill = el("div", "fill");
+  fill.style.width = Math.max(0, Math.min(1, p)) * 100 + "%";
+  track.append(fill);
+  row.append(n, track, el("span", "pct", pct(p)));
+  return row;
+}
+
+function renderAnswer(id, a, question) {
+  const box = el("div", "answer");
+  const h = el("h3", null, id); h.append(el("span", "tag", a.type || "answer"));
+  box.append(h);
+  if (question && question.instructions) box.append(el("p", "q", question.instructions));
+
+  const verdict = el("div", "verdict");
+  const conf = typeof a.confidence === "number" ? "confidence " + pct(a.confidence) : "";
+  if (a.type === "noul" && typeof a.noul === "number") {
+    verdict.textContent = a.noul >= 0.5 ? "Yes" : "No";
+    verdict.append(el("small", null, "P(yes) " + pct(a.noul)));
+    box.append(verdict, bar("yes", a.noul), bar("no", 1 - a.noul));
+    return box;
+  }
+  if (a.type === "choice") {
+    verdict.textContent = String(a.choice);
+  } else if (a.type === "score") {
+    const levels = Array.isArray(question && question.criteria) ? question.criteria.length - 1 : null;
+    verdict.textContent = (typeof a.score === "number" ? a.score.toFixed(2) : String(a.score)) + (levels != null ? " / " + levels : "");
+  } else {
+    box.append(el("pre", null, pretty(a)));
+    return box;
+  }
+  if (conf) verdict.append(el("small", null, conf));
+  box.append(verdict);
+
+  const probs = a.probabilities && typeof a.probabilities === "object" ? Object.entries(a.probabilities) : [];
+  if (a.type === "choice") probs.sort((x, y) => y[1] - x[1]);
+  for (const [k, p] of probs) {
+    if (typeof p !== "number") continue;
+    let name = k;
+    if (a.type === "score") {
+      const text = (a.legend && a.legend[k]) || (question && Array.isArray(question.criteria) && question.criteria[k]);
+      if (text) name = k + ". " + text;
+    }
+    box.append(bar(name, p));
+  }
+  return box;
+}
+
+function showError(message, raw) {
+  const out = $("output"); out.replaceChildren(el("div", "error", message));
+  if (raw !== undefined) { const d = el("details"); d.append(el("summary", null, "Raw response"), el("pre", null, pretty(raw))); out.append(d); }
+}
+
+function describeApiError(status, result) {
+  const d = result && (result.detail || result.error || result);
+  const msg = d && typeof d === "object" ? (d.message || pretty(d)) : String(d ?? "");
+  const hints = { 401: "The API key was rejected.", 403: "The API key was rejected.", 400: "The request was malformed.", 422: "The request was malformed.", 429: "Rate limited. Wait a moment and retry.", 529: "The service is overloaded. Retry shortly." };
+  return `Jev API returned ${status}. ${hints[status] || ""}\n${msg}`.trim();
+}
+
+// OpenRouter accepts browser calls, so that path goes straight from this page.
+// TypeSafe's own API rejects cross-origin browser calls, so that path needs the
+// local app server (jev-app/app.py) to forward the request.
+const OPENROUTER_URL = "https://openrouter.ai/api/v1/systemone";
+let localServer = false;
+
+async function send(provider, apiKey, model, state, questions) {
+  if (provider === "openrouter") {
+    if (!apiKey) return { error: "Enter your OpenRouter API key." };
+    const res = await fetch(OPENROUTER_URL, {
+      method: "POST",
+      headers: { Authorization: "Bearer " + apiKey, "Content-Type": "application/json" },
+      body: JSON.stringify({ model, state, questions })
+    });
+    let result; const text = await res.text();
+    try { result = JSON.parse(text); } catch { result = { error: text.slice(0, 2000) }; }
+    return { status: res.status, ok: res.ok, result };
+  }
+  if (!localServer) return { error: "A TypeSafe API key only works in the local app, because TypeSafe's API blocks calls from websites. Use an OpenRouter key here." };
+  const res = await fetch("api/run", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ api_key: apiKey, model, state, questions })
+  });
+  const data = await res.json();
+  return res.ok ? data : { error: data.error || "Request failed." };
+}
+
+function updateProviderNote() {
+  const ts = $("provider").value === "typesafe";
+  $("providernote").textContent = ts
+    ? "Sent through the local app server to api.typesafe.ai."
+    : "Sent from your browser straight to openrouter.ai. Create a key at openrouter.ai/settings/keys.";
+  $("keyhint").textContent = ts && envKey ? "optional, TYPESAFE_API_KEY is set" : "";
+  $("key").placeholder = ts ? (envKey ? "Using TYPESAFE_API_KEY" : "TypeSafe API key") : "OpenRouter API key";
+}
+let envKey = false;
+
+async function run(ev) {
+  ev && ev.preventDefault();
+  let questions, state;
+  try { questions = JSON.parse($("questions").value); }
+  catch (e) { return showError("Questions is not valid JSON.\n" + e.message); }
+  if (!questions || typeof questions !== "object" || Array.isArray(questions)) return showError("Questions must be a JSON object keyed by question id.");
+  const rawState = $("state").value.trim();
+  if (!rawState) return showError("State is empty.");
+  try { state = JSON.parse(rawState); } catch { state = rawState; }  // plain text is a valid state
+  saveDraft();
+
+  $("run").disabled = true; $("status").textContent = "Running…";
+  const t0 = performance.now();
+  try {
+    const data = await send($("provider").value, $("key").value.trim(), $("model").value.trim() || "jev-latest", state, questions);
+    const ms = Math.round(performance.now() - t0);
+    if (data.error) { $("status").textContent = ""; return showError(data.error); }
+    if (!data.ok) { $("status").textContent = ""; return showError(describeApiError(data.status, data.result), data.result); }
+
+    const r = data.result, out = $("output");
+    out.replaceChildren();
+    for (const [id, a] of Object.entries(r.answers || {})) out.append(renderAnswer(id, a || {}, questions[id]));
+    if (!out.children.length) out.append(el("p", "empty", "The response had no answers."));
+    const d = el("details"); d.append(el("summary", null, "Raw answers JSON"), el("pre", null, pretty(r.answers ?? r)));
+    out.append(d);
+    const usage = r.usage ? ` · ${r.usage.input_tokens ?? "?"} input tokens` + (typeof r.usage.cost === "number" ? ` · $${r.usage.cost.toFixed(5)}` : "") : "";
+    $("status").textContent = `${r.model || "done"} · ${ms} ms${usage}`;
+  } catch (e) {
+    $("status").textContent = "";
+showError(($("provider").value === "typesafe" ? "Could not reach the local app server. Is app.py still running?" : "Could not reach OpenRouter. Check your connection.") + "\n" + e.message);
+  } finally {
+    $("run").disabled = false;
+  }
+}
+
+$("form").addEventListener("submit", run);
+$("reset").addEventListener("click", loadExample);
+document.addEventListener("keydown", (e) => { if ((e.metaKey || e.ctrlKey) && e.key === "Enter") run(); });
+if (!restoreDraft()) loadExample();
+$("provider").addEventListener("change", updateProviderNote);
+updateProviderNote();
+// The local app answers api/config; on the hosted site that request fails and
+// the TypeSafe-key option is turned off.
+fetch("api/config").then((r) => (r.ok ? r.json() : Promise.reject())).then((c) => {
+  if (typeof c.env_key !== "boolean") throw 0;
+  localServer = true; envKey = c.env_key;
+  $("provider").value = "typesafe";
+}).catch(() => {
+  const opt = $("provider").querySelector('option[value="typesafe"]');
+  opt.disabled = true; opt.textContent = "TypeSafe API key (local app only)";
+}).finally(updateProviderNote);
+</script>
+</body>
+</html>
