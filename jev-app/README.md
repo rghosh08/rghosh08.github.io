@@ -32,14 +32,6 @@ cd relay && netlify deploy --prod --site 8ac1fe44-30c9-47e2-bdb7-c3ec34688af0 \
   --dir "$PWD/site" --functions "$PWD/netlify/functions"
 ```
 
-### Saved API key
-
-The hosted page works with the key field left blank. The relay then uses the
-key in its `JEV_API_KEY` environment variable, but only for callers who send
-the access token matching `JEV_ACCESS_TOKEN`. The page derives that token from
-the gate credentials as `sha256("jev-relay:" + username + ":" + password)`.
-Set both with `netlify env:set` and redeploy. Never commit either value: this
-repository is public.
-
-The page also accepts an OpenRouter API key, which is sent straight from the
-browser to `https://openrouter.ai/api/v1/systemone`.
+The hosted page requires the caller to type a TypeSafe API key. The page also
+accepts an OpenRouter API key, which is sent straight from the browser to
+`https://openrouter.ai/api/v1/systemone`.

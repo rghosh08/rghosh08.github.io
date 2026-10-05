@@ -24,7 +24,7 @@ const CONSULTING_FORM_ENDPOINT = import.meta.env.VITE_CONSULTING_FORM_ENDPOINT;
 const CAL_LINK = import.meta.env.VITE_CAL_LINK;
 const CAL_NAMESPACE = "consultation";
 
-// Gated chips ("My Resources", "Jev Runner"). This site is fully static (GitHub Pages, no
+// Gated "My Resources" chip. This site is fully static (GitHub Pages, no
 // server), so this is obfuscation, not real access control: the resource files
 // still live at fixed public URLs. We store only a SHA-256 of `username:password`
 // so the plaintext credential never ships in the bundle, and keep the resources
@@ -39,8 +39,6 @@ const RESOURCES = [
   ["cn-module-11-question-pool.pdf", "CN Module 11 — Video & Multimedia (Question Pool PDF)"],
   ["cn-module-12-question-pool.pdf", "CN Module 12 — CDNs & Overlay Networks (Question Pool PDF)"],
 ];
-// Opens in the same tab so the page's own gate sees this tab's unlocked state.
-const JEV_RESOURCES = [["jev.html", "Open Jev Runner", { sameTab: true }]];
 
 async function sha256Hex(str) {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
@@ -119,9 +117,6 @@ function ResourcesChip({ label = "My Resources", resources = RESOURCES }) {
 
     if (hash === RESOURCES_HASH) {
       sessionStorage.setItem("resources-unlocked", "1");
-      // Jev Runner sends this to its relay, which checks it before using the
-      // saved API key. It is a different hash from RESOURCES_HASH on purpose.
-      sessionStorage.setItem("jev-access", await sha256Hex(`jev-relay:${username}:${password}`));
       setUnlocked(true);
     } else {
       setError("Incorrect username or password.");
@@ -247,7 +242,7 @@ function Header() {
           Substack
         </a>
         <ResourcesChip />
-        <ResourcesChip label="Jev Runner" resources={JEV_RESOURCES} />
+        <a href="jev.html" className="nav-chip">Jev Runner</a>
       </nav>
     </header>
   );

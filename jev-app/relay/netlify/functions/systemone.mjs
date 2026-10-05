@@ -4,10 +4,10 @@
 // here and this function forwards the request to TypeSafe with the caller's
 // own API key, passed through in memory only. Nothing is logged or stored.
 //
-// A caller may instead send an X-Jev-Access token and no key. The token is
-// derived in the browser from the site's gate username and password. When it
-// matches JEV_ACCESS_TOKEN, the relay uses the key in JEV_API_KEY. Both are
-// Netlify environment variables and are never committed to the repository.
+// A caller may instead send an X-Jev-Access token and no key. When it matches
+// JEV_ACCESS_TOKEN, the relay uses the key in JEV_API_KEY. Both are Netlify
+// environment variables and are never committed to the repository. The hosted
+// page no longer sends this token; callers type their own API key.
 import { createHash, timingSafeEqual } from "node:crypto";
 
 const UPSTREAM = "https://api.typesafe.ai/v1/systemone";
