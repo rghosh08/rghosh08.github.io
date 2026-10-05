@@ -24,7 +24,7 @@ const CONSULTING_FORM_ENDPOINT = import.meta.env.VITE_CONSULTING_FORM_ENDPOINT;
 const CAL_LINK = import.meta.env.VITE_CAL_LINK;
 const CAL_NAMESPACE = "consultation";
 
-// Gated "My Resources" chip. This site is fully static (GitHub Pages, no
+// Gated chips ("My Resources", "Jev Runner"). This site is fully static (GitHub Pages, no
 // server), so this is obfuscation, not real access control: the resource files
 // still live at fixed public URLs. We store only a SHA-256 of `username:password`
 // so the plaintext credential never ships in the bundle, and keep the resources
@@ -39,6 +39,8 @@ const RESOURCES = [
   ["cn-module-11-question-pool.pdf", "CN Module 11 — Video & Multimedia (Question Pool PDF)"],
   ["cn-module-12-question-pool.pdf", "CN Module 12 — CDNs & Overlay Networks (Question Pool PDF)"],
 ];
+// Opens in the same tab so the page's own gate sees this tab's unlocked state.
+const JEV_RESOURCES = [["jev.html", "Open Jev Runner", { sameTab: true }]];
 
 async function sha256Hex(str) {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
@@ -88,7 +90,7 @@ function extractPageContent(html) {
   return content ? content.innerHTML : html;
 }
 
-function ResourcesChip() {
+function ResourcesChip({ label = "My Resources", resources = RESOURCES }) {
   const [open, setOpen] = React.useState(false);
   const [unlocked, setUnlocked] = React.useState(
     () => sessionStorage.getItem("resources-unlocked") === "1",
@@ -130,9 +132,13 @@ function ResourcesChip() {
         type="button"
         className="nav-chip"
         aria-haspopup="dialog"
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          // Another gated chip may have unlocked this tab since we mounted.
+          setUnlocked(sessionStorage.getItem("resources-unlocked") === "1");
+          setOpen(true);
+        }}
       >
-        My Resources
+        {label}
       </button>
 
       {open && (
@@ -145,7 +151,7 @@ function ResourcesChip() {
             className="resource-modal"
             role="dialog"
             aria-modal="true"
-            aria-label="My Resources"
+            aria-label={label}
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -156,15 +162,19 @@ function ResourcesChip() {
             >
               &times;
             </button>
-            <h2>My Resources</h2>
+            <h2>{label}</h2>
 
             {unlocked ? (
               <ul className="resource-list">
-                {RESOURCES.map(([href, label]) => (
+                {resources.map(([href, text, opts]) => (
                   <li key={href}>
-                    <a href={href} target="_blank" rel="noopener noreferrer">
-                      {label}
-                    </a>
+                    {opts?.sameTab ? (
+                      <a href={href}>{text}</a>
+                    ) : (
+                      <a href={href} target="_blank" rel="noopener noreferrer">
+                        {text}
+                      </a>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -234,6 +244,7 @@ function Header() {
           Substack
         </a>
         <ResourcesChip />
+        <ResourcesChip label="Jev Runner" resources={JEV_RESOURCES} />
       </nav>
     </header>
   );

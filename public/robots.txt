@@ -7,5 +7,6 @@ Disallow: /cn-module-09-question-pool.pdf
 Disallow: /cn-module-10-question-pool.pdf
 Disallow: /cn-module-11-question-pool.pdf
 Disallow: /cn-module-12-question-pool.pdf
+Disallow: /jev.html
 
 Sitemap: https://rajatghosh.me/sitemap.xml

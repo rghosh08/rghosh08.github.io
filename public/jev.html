@@ -47,11 +47,23 @@
   summary { cursor:pointer; color:var(--muted); font-size:13px; }
   pre { background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:10px; overflow:auto; font:12.5px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; margin:8px 0 0; }
   .empty { color:var(--muted); }
+  .gate { max-width:380px; margin:12vh auto 0; }
+  [hidden] { display:none !important; }
   .note { color:var(--muted); font-size:13px; margin:6px 0 0; }
 </style>
 </head>
 <body>
-<main>
+<form class="card gate" id="gate" hidden autocomplete="off">
+  <h1>Jev Runner</h1>
+  <p class="sub">Enter your credentials to continue.</p>
+  <label for="gateuser">Username</label>
+  <input id="gateuser" type="text" autocomplete="off" spellcheck="false" required>
+  <label for="gatepass">Password</label>
+  <input id="gatepass" type="password" autocomplete="off" required>
+  <div class="actions"><button class="primary" type="submit">Unlock</button><span class="status" id="gatestatus"></span></div>
+</form>
+
+<main id="app" hidden>
   <h1>Jev Runner</h1>
   <p class="sub">Send application state and typed questions to TypeSafe's Jev model, and read back typed answers with probabilities. Your API key is used for the request only and is never stored.</p>
 
@@ -95,6 +107,28 @@
 </main>
 
 <script>
+// Same gate as the "My Resources" chip on the home page: a SHA-256 of
+// `username:password`, remembered per tab. This is obfuscation on a static
+// site, not real access control. The local app (jev-app/app.py) skips it.
+const GATE_HASH = "5355a870efaa9a533658b9b77e977dfe3b11bcdf7669bf802d2f03a6c2c89caf";
+(function gate() {
+  const app = document.getElementById("app"), form = document.getElementById("gate");
+  const isLocal = ["127.0.0.1", "localhost", "[::1]"].includes(location.hostname);
+  let unlocked = isLocal;
+  try { unlocked = unlocked || sessionStorage.getItem("resources-unlocked") === "1"; } catch {}
+  if (unlocked) { app.hidden = false; return; }
+  form.hidden = false;
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const text = document.getElementById("gateuser").value.trim() + ":" + document.getElementById("gatepass").value;
+    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+    const hash = Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    if (hash !== GATE_HASH) { document.getElementById("gatestatus").textContent = "Incorrect username or password."; return; }
+    try { sessionStorage.setItem("resources-unlocked", "1"); } catch {}
+    form.hidden = true; app.hidden = false;
+  });
+})();
+
 const EXAMPLE_STATE = { visitor_says: "My son wandered off near platform 4 and I can't find him. I also have two big suitcases." };
 const EXAMPLE_QUESTIONS = {
   desk: {
