@@ -92,7 +92,7 @@ class Handler(BaseHTTPRequestHandler):
         if not api_key:
             return self._send(400, {"error": "Enter an API key, or set TYPESAFE_API_KEY before starting the app."})
         if not isinstance(questions, dict) or not questions:
-            return self._send(400, {"error": "Questions must be a non-empty JSON object."})
+            return self._send(400, {"error": "Primitives must be a non-empty JSON object."})
         if body.get("state") in (None, "", {}, []):
             return self._send(400, {"error": "State is empty."})
 

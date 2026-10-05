@@ -65,7 +65,7 @@
 
 <main id="app" hidden>
   <h1>Jev Runner</h1>
-  <p class="sub">Send application state and typed questions to TypeSafe's Jev model, and read back typed answers with probabilities. Your API key is used for the request only and is never stored.</p>
+  <p class="sub">Send application state and typed primitives (Choice, Score, Noul) to TypeSafe's Jev model, and read back typed answers with probabilities. Your API key is used for the request only and is never stored.</p>
 
   <div class="grid">
     <form class="card" id="form" autocomplete="off">
@@ -90,7 +90,7 @@
       <label for="state">State <span class="hint">JSON object, or plain text</span></label>
       <textarea id="state" rows="6" spellcheck="false"></textarea>
 
-      <label for="questions">Questions <span class="hint">JSON object, one entry per question</span></label>
+      <label for="questions">Primitives (Choice, Score, Noul) <span class="hint">JSON object, one entry per primitive</span></label>
       <textarea id="questions" rows="22" spellcheck="false"></textarea>
 
       <div class="actions">
@@ -291,8 +291,8 @@ async function run(ev) {
   ev && ev.preventDefault();
   let questions, state;
   try { questions = JSON.parse($("questions").value); }
-  catch (e) { return showError("Questions is not valid JSON.\n" + e.message); }
-  if (!questions || typeof questions !== "object" || Array.isArray(questions)) return showError("Questions must be a JSON object keyed by question id.");
+  catch (e) { return showError("Primitives is not valid JSON.\n" + e.message); }
+  if (!questions || typeof questions !== "object" || Array.isArray(questions)) return showError("Primitives must be a JSON object keyed by primitive id.");
   const rawState = $("state").value.trim();
   if (!rawState) return showError("State is empty.");
   try { state = JSON.parse(rawState); } catch { state = rawState; }  // plain text is a valid state
