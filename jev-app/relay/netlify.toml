@@ -1,0 +1,11 @@
+# Relay for the hosted Jev Runner page. See netlify/functions/systemone.mjs.
+# Deploy from this folder with explicit paths (see ../README.md); the CLI
+# otherwise resolves them against the repository root.
+[build]
+  # Nothing to build. Set explicitly so the CLI does not guess a framework.
+  command = "echo 'No build step'"
+  publish = "site"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"

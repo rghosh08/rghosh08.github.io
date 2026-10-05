@@ -53,14 +53,14 @@
 <body>
 <main>
   <h1>Jev Runner</h1>
-  <p class="sub">Send application state and typed questions to TypeSafe's Jev model, and read back typed answers with probabilities. Your API key stays in this tab and is sent only to the model provider.</p>
+  <p class="sub">Send application state and typed questions to TypeSafe's Jev model, and read back typed answers with probabilities. Your API key is used for the request only and is never stored.</p>
 
   <div class="grid">
     <form class="card" id="form" autocomplete="off">
       <label for="provider">Key type</label>
       <select id="provider">
-        <option value="openrouter">OpenRouter API key</option>
         <option value="typesafe">TypeSafe API key</option>
+        <option value="openrouter">OpenRouter API key</option>
       </select>
       <p class="note" id="providernote"></p>
 
@@ -207,24 +207,33 @@ function describeApiError(status, result) {
 }
 
 // OpenRouter accepts browser calls, so that path goes straight from this page.
-// TypeSafe's own API rejects cross-origin browser calls, so that path needs the
-// local app server (jev-app/app.py) to forward the request.
+// TypeSafe's own API rejects cross-origin browser calls, so that path is
+// forwarded: by the local app server (jev-app/app.py) when this page is run
+// locally, otherwise by the hosted relay (jev-app/relay).
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/systemone";
+const RELAY_URL = "https://jev-relay-rajatghosh.netlify.app/systemone";
 let localServer = false;
+
+async function postDirect(url, apiKey, model, state, questions) {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { Authorization: "Bearer " + apiKey, "Content-Type": "application/json" },
+    body: JSON.stringify({ model, state, questions })
+  });
+  let result; const text = await res.text();
+  try { result = JSON.parse(text); } catch { result = { error: text.slice(0, 2000) }; }
+  return { status: res.status, ok: res.ok, result };
+}
 
 async function send(provider, apiKey, model, state, questions) {
   if (provider === "openrouter") {
     if (!apiKey) return { error: "Enter your OpenRouter API key." };
-    const res = await fetch(OPENROUTER_URL, {
-      method: "POST",
-      headers: { Authorization: "Bearer " + apiKey, "Content-Type": "application/json" },
-      body: JSON.stringify({ model, state, questions })
-    });
-    let result; const text = await res.text();
-    try { result = JSON.parse(text); } catch { result = { error: text.slice(0, 2000) }; }
-    return { status: res.status, ok: res.ok, result };
+    return postDirect(OPENROUTER_URL, apiKey, model, state, questions);
   }
-  if (!localServer) return { error: "A TypeSafe API key only works in the local app, because TypeSafe's API blocks calls from websites. Use an OpenRouter key here." };
+  if (!localServer) {
+    if (!apiKey) return { error: "Enter your TypeSafe API key." };
+    return postDirect(RELAY_URL, apiKey, model, state, questions);
+  }
   const res = await fetch("api/run", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -237,7 +246,7 @@ async function send(provider, apiKey, model, state, questions) {
 function updateProviderNote() {
   const ts = $("provider").value === "typesafe";
   $("providernote").textContent = ts
-    ? "Sent through the local app server to api.typesafe.ai."
+    ? (localServer ? "Sent through the local app server to api.typesafe.ai." : "Sent through a relay to api.typesafe.ai, because TypeSafe blocks direct calls from websites. The relay does not log or store the key.")
     : "Sent from your browser straight to openrouter.ai. Create a key at openrouter.ai/settings/keys.";
   $("keyhint").textContent = ts && envKey ? "optional, TYPESAFE_API_KEY is set" : "";
   $("key").placeholder = ts ? (envKey ? "Using TYPESAFE_API_KEY" : "TypeSafe API key") : "OpenRouter API key";
@@ -273,7 +282,7 @@ async function run(ev) {
     $("status").textContent = `${r.model || "done"} · ${ms} ms${usage}`;
   } catch (e) {
     $("status").textContent = "";
-showError(($("provider").value === "typesafe" ? "Could not reach the local app server. Is app.py still running?" : "Could not reach OpenRouter. Check your connection.") + "\n" + e.message);
+showError(($("provider").value !== "typesafe" ? "Could not reach OpenRouter. Check your connection." : localServer ? "Could not reach the local app server. Is app.py still running?" : "Could not reach the relay. Check your connection.") + "\n" + e.message);
   } finally {
     $("run").disabled = false;
   }
@@ -290,11 +299,7 @@ updateProviderNote();
 fetch("api/config").then((r) => (r.ok ? r.json() : Promise.reject())).then((c) => {
   if (typeof c.env_key !== "boolean") throw 0;
   localServer = true; envKey = c.env_key;
-  $("provider").value = "typesafe";
-}).catch(() => {
-  const opt = $("provider").querySelector('option[value="typesafe"]');
-  opt.disabled = true; opt.textContent = "TypeSafe API key (local app only)";
-}).finally(updateProviderNote);
+}).catch(() => {}).finally(updateProviderNote);
 </script>
 </body>
 </html>

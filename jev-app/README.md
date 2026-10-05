@@ -22,6 +22,15 @@ other origins. It listens on 127.0.0.1 only and forwards each run to
 ## Hosted version
 
 The same page is published at https://rajatghosh.me/jev.html (source:
-`public/jev.html`). The hosted page has no server, so it only accepts an
-OpenRouter API key and calls `https://openrouter.ai/api/v1/systemone` straight
-from the browser. Use this local app when you have a TypeSafe API key.
+`public/jev.html`). The site is static, so TypeSafe-key requests from the
+hosted page go through a small relay in `relay/`, a Netlify function at
+`https://jev-relay-rajatghosh.netlify.app/systemone`. The relay only answers
+rajatghosh.me, forwards the caller's key in memory, and stores nothing.
+
+```bash
+cd relay && netlify deploy --prod --site 8ac1fe44-30c9-47e2-bdb7-c3ec34688af0 \
+  --dir "$PWD/site" --functions "$PWD/netlify/functions"
+```
+
+The page also accepts an OpenRouter API key, which is sent straight from the
+browser to `https://openrouter.ai/api/v1/systemone`.
