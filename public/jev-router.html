@@ -53,6 +53,8 @@
   .empty { color:var(--muted); }
   .range { display:grid; grid-template-columns:1fr 56px; gap:10px; align-items:center; }
   .range output { font-variant-numeric:tabular-nums; text-align:right; }
+  .step2 { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:12px; }
+  .step2 select { width:auto; }
 </style>
 </head>
 <body>
@@ -102,15 +104,14 @@
       </details>
 
       <div class="actions">
-        <button class="primary" id="run" type="submit">Route and answer</button>
-        <button type="button" id="dry">Route only</button>
+        <button class="primary" id="run" type="submit">Step 1 · Route with Jev</button>
         <button type="button" id="example">Load example</button>
         <span class="status" id="status"></span>
       </div>
     </form>
 
     <div class="card">
-      <div id="output"><p class="empty">The routing decision and the answer appear here. Press Cmd or Ctrl + Enter to run.</p></div>
+      <div id="output"><p class="empty">Step 1 shows Jev's routing decision here. Step 2, generating the answer with the chosen model, is a separate button that appears with the decision. Press Cmd or Ctrl + Enter to run the next step.</p></div>
     </div>
   </div>
 </main>
@@ -297,21 +298,28 @@ function renderDecision(tier, decision, coverage, forced) {
 }
 
 function showError(message, raw) {
+  pending = null;
   const out = $("output"); out.replaceChildren(el("div", "error", message));
   if (raw !== undefined) { const d = el("details"); d.append(el("summary", null, "Raw response"), el("pre", null, pretty(raw))); out.append(d); }
 }
 
 let busy = false;
-async function run(dryRun) {
+// Step 1 result, consumed by step 2. Holds the request as it was routed.
+let pending = null;
+
+function setBusy(b) { busy = b; $("run").disabled = b; const g = $("generate"); if (g) g.disabled = b; }
+
+// Step 1: ask Jev, show the decision and the step 2 controls.
+async function route() {
   if (busy) return;
   const query = $("query").value.trim();
   if (!query) return showError("Enter a coding request.");
   const coverage = Number($("coverage").value);
   const forced = $("force").value;
-  const tsKey = $("tskey").value.trim(), antKey = $("antkey").value.trim();
+  const tsKey = $("tskey").value.trim();
   saveDraft();
 
-  busy = true; $("run").disabled = $("dry").disabled = true;
+  setBusy(true); pending = null;
   const out = $("output"); out.replaceChildren();
   const t0 = performance.now();
   try {
@@ -325,16 +333,51 @@ async function run(dryRun) {
       else tier = pickTier(decision.probs, coverage);
     }
     const tJev = Math.round(performance.now() - t0);
-    out.append(renderDecision(tier, decision, coverage, Boolean(forced)));
-    if (dryRun) { $("status").textContent = `routed in ${tJev} ms`; return; }
+    const sec = renderDecision(tier, decision, coverage, Boolean(forced));
+    pending = { query, tier, tJev };
+    sec.append(renderStep2(tier));
+    out.append(sec);
+    $("status").textContent = forced ? "tier forced, Jev skipped" : `routed in ${tJev} ms`;
+  } catch (e) {
+    $("status").textContent = "";
+    out.append(el("div", "error", "Routing failed.\n" + e.message));
+  } finally {
+    setBusy(false);
+  }
+}
 
-    const sec = el("div", "section");
-    const h = el("h2", null, "Answer"); h.append(el("span", "tag", MODELS[tier].model));
-    const box = el("div", "answer");
-    sec.append(h, box); out.append(sec);
-    $("status").textContent = `routed in ${tJev} ms · ${MODELS[tier].model} answering…`;
+// The step 2 controls: a model picker preset to Jev's choice, and the generate button.
+function renderStep2(tier) {
+  const row = el("div", "step2");
+  const pick = el("select"); pick.id = "pickTier";
+  for (const t of TIERS) { const o = el("option", null, `${MODELS[t].label} · ${MODELS[t].model}`); o.value = t; if (t === tier) o.selected = true; pick.append(o); }
+  const btn = el("button", "primary", "Step 2 · Generate answer"); btn.id = "generate"; btn.type = "button";
+  btn.addEventListener("click", generate);
+  pick.addEventListener("change", () => { btn.textContent = pick.value === tier ? "Step 2 · Generate answer" : "Step 2 · Generate answer (overriding Jev)"; });
+  row.append(btn, el("span", "hint", "with"), pick);
+  return row;
+}
+
+// Step 2: send the routed request to the chosen model and stream the answer.
+async function generate() {
+  if (busy || !pending) return;
+  if ($("query").value.trim() !== pending.query) return showError("The request changed since it was routed. Run step 1 again.");
+  const tier = $("pickTier").value;
+  const antKey = $("antkey").value.trim();
+  const out = $("output");
+  const old = out.querySelector(".answer-section"); if (old) old.remove();
+  const step2 = out.querySelector(".step2");
+
+  setBusy(true);
+  const t0 = performance.now();
+  const sec = el("div", "section answer-section");
+  const h = el("h2", null, "Answer"); h.append(el("span", "tag", MODELS[tier].model));
+  const box = el("div", "answer");
+  sec.append(h, box); out.append(sec);
+  $("status").textContent = `${MODELS[tier].model} answering…`;
+  try {
     let r;
-    try { r = await answer(antKey, tier, query, (t) => { box.append(document.createTextNode(t)); }); }
+    try { r = await answer(antKey, tier, pending.query, (t) => { box.append(document.createTextNode(t)); }); }
     catch (e) {
       if (!box.textContent) throw e;
       sec.append(el("p", "error", "The connection dropped before the answer finished.\n" + e.message));
@@ -346,14 +389,15 @@ async function run(dryRun) {
     if (r.stop_reason === "refusal") sec.append(el("p", "error", "The model declined this request." + (r.stop_details && r.stop_details.explanation ? "\n" + r.stop_details.explanation : "")));
     else if (r.stop_reason === "max_tokens") sec.append(el("p", "note", "The reply hit the tier's token limit and was cut off."));
     const served = r.served_by && r.served_by !== r.model ? ` (served by ${r.served_by})` : "";
-    $("status").textContent = `${r.model}${served} · ${ms} ms · in ${r.usage.input_tokens ?? "?"} · out ${r.usage.output_tokens ?? "?"} tokens${r.viaRelay ? " · via relay" : ""}`;
+    $("status").textContent = `${r.model}${served} · routed in ${pending.tJev} ms · answered in ${ms} ms · in ${r.usage.input_tokens ?? "?"} · out ${r.usage.output_tokens ?? "?"} tokens${r.viaRelay ? " · via relay" : ""}`;
     if (r.viaRelay) sec.append(el("p", "note", "Your browser could not reach api.anthropic.com directly, so this answer was fetched through the relay. Keys pass through it in memory only."));
   } catch (e) {
     $("status").textContent = "";
     const where = localServer ? "Could not complete the request through the local app server. Is router.py still running?" : "Request failed.";
-    out.append(el("div", "error", where + "\n" + e.message));
+    sec.append(el("div", "error", where + "\n" + e.message));
   } finally {
-    busy = false; $("run").disabled = $("dry").disabled = false;
+    setBusy(false);
+    if (step2) step2.scrollIntoView({ block: "nearest" });
   }
 }
 
@@ -367,12 +411,15 @@ function updateNotes() {
     : "The Jev call goes through a relay to api.typesafe.ai, because TypeSafe blocks direct calls from websites. The Claude call goes from your browser straight to api.anthropic.com, falling back to the relay if your browser cannot reach it. Neither key is logged or stored.";
 }
 
-$("form").addEventListener("submit", (e) => { e.preventDefault(); run(false); });
-$("dry").addEventListener("click", () => run(true));
+$("form").addEventListener("submit", (e) => { e.preventDefault(); route(); });
 $("example").addEventListener("click", loadExample);
 $("coverage").addEventListener("input", () => { $("coverageout").value = Number($("coverage").value).toFixed(2); });
 $("coverageout").value = Number($("coverage").value).toFixed(2);
-document.addEventListener("keydown", (e) => { if ((e.metaKey || e.ctrlKey) && e.key === "Enter") run(false); });
+// Cmd/Ctrl+Enter runs the next step: route first, then generate once a decision is shown for the current request.
+document.addEventListener("keydown", (e) => {
+  if (!(e.metaKey || e.ctrlKey) || e.key !== "Enter") return;
+  if (pending && $("generate") && $("query").value.trim() === pending.query) generate(); else route();
+});
 if (!restoreDraft()) loadExample();
 updateNotes();
 // The local app answers api/config; on the hosted site that request fails.

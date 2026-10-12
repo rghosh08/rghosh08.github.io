@@ -51,10 +51,15 @@ that model's answer.
 | Medium | `claude-sonnet-5-5` | 32,000     | medium |
 | High   | `claude-opus-5-5`   | 64,000     | high   |
 
+The page works in two steps. Step 1 routes: Jev's probabilities, the
+chosen tier, and the raw response are shown, and nothing is sent to Claude.
+Step 2 is a separate "Generate answer" button next to a model picker preset
+to Jev's choice, so the decision can be overridden before any answer is
+generated. Editing the request after step 1 requires routing again.
+
 If Jev is unreachable or returns a server error, the request falls back to
 the High tier. A rejected TypeSafe key stops with an error instead. A tier
-can also be forced from the form, which skips Jev. "Route only" shows the
-decision without calling Claude. The Sonnet and Opus calls send
+can also be forced from the form, which skips Jev. The Sonnet and Opus calls send
 `fallbacks: "default"` (beta `server-side-fallback-2026-07-01`), so a
 safety-classifier refusal is retried on a fallback model server-side.
 
