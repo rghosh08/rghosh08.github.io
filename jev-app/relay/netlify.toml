@@ -5,7 +5,13 @@
   # Nothing to build. Set explicitly so the CLI does not guess a framework.
   command = "echo 'No build step'"
   publish = "site"
+  edge_functions = "netlify/edge-functions"
 
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
+
+# Claude relay for the Jev Semantic Router page. See netlify/edge-functions/messages.js.
+[[edge_functions]]
+  path = "/messages"
+  function = "messages"

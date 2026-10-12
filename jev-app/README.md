@@ -66,7 +66,15 @@ Locally, both calls go through `router.py`; empty key fields fall back to
 `TYPESAFE_API_KEY` and `ANTHROPIC_API_KEY`. The hosted copy at
 https://rajatghosh.me/jev-router.html sends the Jev call through the same
 relay as Jev Runner and the Claude call from the browser straight to
-`api.anthropic.com`, using the API's browser-access header.
+`api.anthropic.com`, using the API's browser-access header. If that direct
+call fails at the network level (the browser reports "Failed to fetch",
+typically an extension, proxy, or network blocking the host), the page
+retries through `relay/netlify/edge-functions/messages.js` at
+`https://jev-relay-rajatghosh.netlify.app/messages`, which streams the
+response back and notes "via relay" in the status line. It is an Edge
+Function because regular Netlify functions stop after 60 seconds, while an
+edge function only has to start responding within 40 seconds. The same
+`netlify deploy` command above deploys it.
 
 ### Command-line version
 

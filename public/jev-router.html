@@ -140,9 +140,12 @@ const EXAMPLES = [
 // Jev goes through the local app server (router.py) when this page is served
 // by it, otherwise through the hosted relay, because TypeSafe rejects direct
 // browser calls. Claude goes straight from the browser to api.anthropic.com
-// on the hosted page, and through the local server when run locally.
+// on the hosted page, and through the local server when run locally. If the
+// direct call fails at the network level (an extension, proxy, or network
+// blocking api.anthropic.com), the page retries through the relay.
 const RELAY_URL = "https://jev-relay-rajatghosh.netlify.app/systemone";
 const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
+const ANTHROPIC_RELAY_URL = "https://jev-relay-rajatghosh.netlify.app/messages";
 let localServer = false, envKeys = { typesafe: false, anthropic: false };
 
 const $ = (id) => document.getElementById(id);
@@ -212,21 +215,30 @@ async function answer(antKey, tier, query, onText) {
   const m = MODELS[tier];
   const body = { model: m.model, max_tokens: m.max_tokens, stream: true, output_config: { effort: m.effort }, messages: [{ role: "user", content: query }] };
   if (m.fallbacks) body.fallbacks = "default";  // server-side refusal fallback, routed by category
-  let res;
+  let res, viaRelay = false;
   if (localServer) {
     res = await fetch("api/answer", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ api_key: antKey, body }) });
   } else {
     if (!antKey) throw new Error("Enter your Anthropic API key.");
     const headers = { "x-api-key": antKey, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true", "Content-Type": "application/json" };
     if (m.fallbacks) headers["anthropic-beta"] = "server-side-fallback-2026-07-01";
-    res = await fetch(ANTHROPIC_URL, { method: "POST", headers, body: JSON.stringify(body) });
+    const payload = JSON.stringify(body);
+    try {
+      res = await fetch(ANTHROPIC_URL, { method: "POST", headers, body: payload });
+    } catch (direct) {
+      // "Failed to fetch": the browser never got a response. Retry via the relay.
+      viaRelay = true;
+      try { res = await fetch(ANTHROPIC_RELAY_URL, { method: "POST", headers, body: payload }); }
+      catch (relay) { throw new Error("Could not reach api.anthropic.com from this browser (" + direct.message + "), and the relay was unreachable too (" + relay.message + "). Check your connection, extensions, or proxy."); }
+    }
   }
   if (!res.ok) {
     const data = await readJson(res);
-    throw new Error(localServer && data.error && !data.result ? data.error : describeApiError("Anthropic API", res.status, data.result || data));
+    if (data && data.error && typeof data.error === "string" && !data.type) throw new Error(data.error);  // relay or local-server message
+    throw new Error(describeApiError("Anthropic API", res.status, data.result || data));
   }
 
-  const out = { usage: {}, stop_reason: null, model: m.model, served_by: null };
+  const out = { usage: {}, stop_reason: null, model: m.model, served_by: null, viaRelay };
   const reader = res.body.getReader(), dec = new TextDecoder();
   let buf = "";
   const handle = (evt) => {
@@ -321,13 +333,21 @@ async function run(dryRun) {
     const box = el("div", "answer");
     sec.append(h, box); out.append(sec);
     $("status").textContent = `routed in ${tJev} ms · ${MODELS[tier].model} answering…`;
-    const r = await answer(antKey, tier, query, (t) => { box.append(document.createTextNode(t)); });
+    let r;
+    try { r = await answer(antKey, tier, query, (t) => { box.append(document.createTextNode(t)); }); }
+    catch (e) {
+      if (!box.textContent) throw e;
+      sec.append(el("p", "error", "The connection dropped before the answer finished.\n" + e.message));
+      $("status").textContent = "";
+      return;
+    }
     const ms = Math.round(performance.now() - t0);
     if (!box.textContent) box.append(el("span", "empty", "The model returned no text."));
     if (r.stop_reason === "refusal") sec.append(el("p", "error", "The model declined this request." + (r.stop_details && r.stop_details.explanation ? "\n" + r.stop_details.explanation : "")));
     else if (r.stop_reason === "max_tokens") sec.append(el("p", "note", "The reply hit the tier's token limit and was cut off."));
     const served = r.served_by && r.served_by !== r.model ? ` (served by ${r.served_by})` : "";
-    $("status").textContent = `${r.model}${served} · ${ms} ms · in ${r.usage.input_tokens ?? "?"} · out ${r.usage.output_tokens ?? "?"} tokens`;
+    $("status").textContent = `${r.model}${served} · ${ms} ms · in ${r.usage.input_tokens ?? "?"} · out ${r.usage.output_tokens ?? "?"} tokens${r.viaRelay ? " · via relay" : ""}`;
+    if (r.viaRelay) sec.append(el("p", "note", "Your browser could not reach api.anthropic.com directly, so this answer was fetched through the relay. Keys pass through it in memory only."));
   } catch (e) {
     $("status").textContent = "";
     const where = localServer ? "Could not complete the request through the local app server. Is router.py still running?" : "Request failed.";
@@ -344,7 +364,7 @@ function updateNotes() {
   $("antkey").placeholder = envKeys.anthropic ? "Using ANTHROPIC_API_KEY" : "Anthropic API key";
   $("keynote").textContent = localServer
     ? "Both calls go through the local app server. Keys are forwarded in memory and never written to disk."
-    : "The Jev call goes through a relay to api.typesafe.ai, because TypeSafe blocks direct calls from websites. The Claude call goes from your browser straight to api.anthropic.com. Neither key is logged or stored.";
+    : "The Jev call goes through a relay to api.typesafe.ai, because TypeSafe blocks direct calls from websites. The Claude call goes from your browser straight to api.anthropic.com, falling back to the relay if your browser cannot reach it. Neither key is logged or stored.";
 }
 
 $("form").addEventListener("submit", (e) => { e.preventDefault(); run(false); });
