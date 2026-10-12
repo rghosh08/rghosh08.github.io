@@ -61,6 +61,30 @@
             </div>
           </div>
         </div>
+        <div class="pub">
+          <div class="meta">
+            <div class="title"><a href="https://rajatghosh.me/jev.html" target="_blank" rel="noopener noreferrer">Jev Runner</a></div>
+            <div class="venue">Web app · Python local server · Netlify relay</div>
+            <p class="summary">Browser front end for TypeSafe's Jev (System One) model. Enter a state and a set of typed primitives (Choice, Score, Noul) and see the typed answers with their probabilities. Runs as a hosted page backed by a key-forwarding relay, or as a dependency-free local Python server that proxies to the Jev API.</p>
+            <p class="pkg-install"><code>python3 app.py &nbsp;# then open http://127.0.0.1:8765</code></p>
+            <div class="links">
+              <a href="https://rajatghosh.me/jev.html" target="_blank" rel="noopener noreferrer">Open Jev Runner</a>
+              <a href="https://github.com/rghosh08/rghosh08.github.io/tree/rajat/jev-app" target="_blank" rel="noopener noreferrer">Source</a>
+            </div>
+          </div>
+        </div>
+        <div class="pub">
+          <div class="meta">
+            <div class="title"><a href="https://rajatghosh.me/jev-router.html" target="_blank" rel="noopener noreferrer">Jev Semantic Router</a></div>
+            <div class="venue">Web app · Python CLI · Haiku / Sonnet / Opus</div>
+            <p class="summary">Routes a coding request to the cheapest Claude model that can handle it. TypeSafe's Jev model scores the request on a three-level difficulty rubric with calibrated probabilities; the router picks the first tier (Haiku, Sonnet, Opus) whose cumulative probability clears a coverage threshold, so uncertain requests escalate rather than fail on a weak model, then streams that model's answer. Ships as a hosted page, a local server, and a CLI with an offline test suite.</p>
+            <p class="pkg-install"><code>python3 claude_tier_router.py --dry-run "design a sharded rate limiter"</code></p>
+            <div class="links">
+              <a href="https://rajatghosh.me/jev-router.html" target="_blank" rel="noopener noreferrer">Open Jev Semantic Router</a>
+              <a href="https://github.com/rghosh08/rghosh08.github.io/tree/rajat/jev-app" target="_blank" rel="noopener noreferrer">Source</a>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   </main>

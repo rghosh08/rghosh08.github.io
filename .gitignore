@@ -23,3 +23,7 @@ pnpm-debug.log*
 
 # Compiled resume (served copy lives in public/)
 resume/resume.pdf
+
+# Python caches
+__pycache__/
+.pytest_cache/

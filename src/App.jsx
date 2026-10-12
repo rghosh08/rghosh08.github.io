@@ -242,7 +242,6 @@ function Header() {
           Substack
         </a>
         <ResourcesChip />
-        <a href="jev.html" className="nav-chip">Jev Runner</a>
       </nav>
     </header>
   );

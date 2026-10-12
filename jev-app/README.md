@@ -35,3 +35,49 @@ cd relay && netlify deploy --prod --site 8ac1fe44-30c9-47e2-bdb7-c3ec34688af0 \
 The hosted page requires the caller to type a TypeSafe API key. The page also
 accepts an OpenRouter API key, which is sent straight from the browser to
 `https://openrouter.ai/api/v1/systemone`.
+
+## Jev Semantic Router
+
+A second page, `public/jev-router.html`, routes coding requests to the right
+Claude model. Jev scores the request on a three-level difficulty rubric and
+returns P(simple), P(medium), P(advanced). The page picks the cheapest tier
+whose cumulative probability reaches the coverage threshold (default 0.8), so
+uncertain requests escalate instead of landing on a weak model, then streams
+that model's answer.
+
+| Tier   | Model              | max_tokens | effort |
+| ------ | ------------------ | ---------- | ------ |
+| Low    | `claude-haiku-5-5`  | 8,000      | low    |
+| Medium | `claude-sonnet-5-5` | 32,000     | medium |
+| High   | `claude-opus-5-5`   | 64,000     | high   |
+
+If Jev is unreachable or returns a server error, the request falls back to
+the High tier. A rejected TypeSafe key stops with an error instead. A tier
+can also be forced from the form, which skips Jev. "Route only" shows the
+decision without calling Claude. The Sonnet and Opus calls send
+`fallbacks: "default"` (beta `server-side-fallback-2026-07-01`), so a
+safety-classifier refusal is retried on a fallback model server-side.
+
+```bash
+python3 router.py         # then open http://127.0.0.1:8766
+```
+
+Locally, both calls go through `router.py`; empty key fields fall back to
+`TYPESAFE_API_KEY` and `ANTHROPIC_API_KEY`. The hosted copy at
+https://rajatghosh.me/jev-router.html sends the Jev call through the same
+relay as Jev Runner and the Claude call from the browser straight to
+`api.anthropic.com`, using the API's browser-access header.
+
+### Command-line version
+
+`claude_tier_router.py` is the same router as a CLI built on the official
+`typesafe-sdk` and `anthropic` packages. It adds `-f queries.txt` for
+classifying a file of requests into JSONL with a tier summary.
+
+```bash
+pip install typesafe-sdk anthropic
+export TYPESAFE_API_KEY=ts_...  ANTHROPIC_API_KEY=sk-ant-...
+python3 claude_tier_router.py "write a regex that matches IPv4 addresses"
+python3 claude_tier_router.py --dry-run "design a sharded rate limiter"
+python3 -m pytest test_router.py      # offline, mocked HTTP for both APIs
+```
