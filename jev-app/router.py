@@ -1,35 +1,62 @@
 #!/usr/bin/env python3
-"""Jev Semantic Router: a tiny local web app that routes coding requests to Claude.
+"""Von Semantic Router: a tiny local web app that routes coding requests to Claude.
 
 Run:   python3 router.py          then open http://127.0.0.1:8766
-Needs: Python 3.8+, no third-party packages.
+Needs: Python 3.8+, no third-party packages, and a running Von server
+       (pip install von-sdk, then von serve; it listens on port 8000).
 
-The page (public/jev-router.html) asks TypeSafe's Jev model how hard a coding
-request is, picks the cheapest Claude tier (Haiku, Sonnet, Opus) whose
-cumulative probability reaches the coverage threshold, and streams that
-model's answer. This server serves the page and forwards both calls, because
-the browser cannot call api.typesafe.ai directly. Keys are sent with each
-request and never written to disk. Empty key fields fall back to the
-TYPESAFE_API_KEY and ANTHROPIC_API_KEY environment variables.
+The page (public/jev-router.html) asks Von, an open-source System One decision
+model (https://huggingface.co/wfzyx/von), how hard a coding request is, picks
+the cheapest Claude tier (Haiku, Sonnet, Opus) whose cumulative probability
+reaches the coverage threshold, and streams that model's answer. This server
+serves the page and forwards both calls. The Von call goes to VON_BASE_URL
+(default http://127.0.0.1:8000, or the address typed into the page) with
+VON_API_KEY as the bearer token if the Von server requires one. Keys are sent
+with each request and never written to disk. Empty key fields fall back to
+the VON_API_KEY and ANTHROPIC_API_KEY environment variables.
 
 The same page is published at https://rajatghosh.me/jev-router.html, where
-the Jev call goes through the relay in relay/ and the Claude call goes from
-the browser straight to api.anthropic.com.
+the browser calls the Von server directly (Von allows cross-origin calls by
+default) and the Claude call goes straight to api.anthropic.com.
 """
 import argparse
 import json
 import os
 import urllib.error
+import urllib.parse
 import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-from app import call_jev
-
 ANTHROPIC_URL = os.environ.get("ANTHROPIC_API_URL", "https://api.anthropic.com/v1/messages")
+VON_BASE_URL = os.environ.get("VON_BASE_URL", "http://127.0.0.1:8000")
 INDEX = Path(__file__).resolve().parent.parent / "public" / "jev-router.html"
 MAX_BODY = 2 * 1024 * 1024
 ALLOWED_MODELS = {"claude-haiku-5-5", "claude-sonnet-5-5", "claude-opus-5-5"}
+
+
+def call_von(base_url, api_key, model, state, questions):
+    """POST one System One request to a Von server. Returns (http_status, parsed_body).
+
+    An unreachable server returns (502, {"error": ..., "unreachable": True}).
+    """
+    url = base_url.rstrip("/") + "/v1/systemone"
+    headers = {"Content-Type": "application/json", "Accept": "application/json", "User-Agent": "von-router/1.0"}
+    if api_key:
+        headers["Authorization"] = f"Bearer {api_key}"
+    payload = json.dumps({"model": model, "state": state, "questions": questions}).encode()
+    req = urllib.request.Request(url, data=payload, method="POST", headers=headers)
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            status, raw = resp.status, resp.read()
+    except urllib.error.HTTPError as err:
+        status, raw = err.code, err.read()
+    except (urllib.error.URLError, TimeoutError, OSError) as err:
+        return 502, {"error": f"Could not reach the Von server at {base_url}: {err}. Start it with `von serve`.", "unreachable": True}
+    try:
+        return status, json.loads(raw)
+    except ValueError:
+        return status, {"error": raw.decode("utf-8", "replace")[:2000]}
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -71,7 +98,8 @@ class Handler(BaseHTTPRequestHandler):
             self._send(200, INDEX.read_bytes(), "text/html; charset=utf-8")
         elif self.path == "/api/config":
             self._send(200, {
-                "typesafe_env_key": bool(os.environ.get("TYPESAFE_API_KEY")),
+                "von_url": VON_BASE_URL,
+                "von_env_key": bool(os.environ.get("VON_API_KEY")),
                 "anthropic_env_key": bool(os.environ.get("ANTHROPIC_API_KEY")),
             })
         else:
@@ -88,16 +116,21 @@ class Handler(BaseHTTPRequestHandler):
         body = self._read_json()
         if body is None:
             return
-        api_key = (body.get("api_key") or os.environ.get("TYPESAFE_API_KEY") or "").strip()
-        if not api_key:
-            return self._send(400, {"error": "Enter a TypeSafe API key, or set TYPESAFE_API_KEY before starting the app."})
+        base_url = str(body.get("von_url") or VON_BASE_URL).strip()
+        parts = urllib.parse.urlsplit(base_url)
+        if parts.scheme not in ("http", "https") or not parts.netloc:
+            return self._send(400, {"error": "The Von server address must be an http or https URL, such as http://127.0.0.1:8000."})
+        api_key = (body.get("api_key") or os.environ.get("VON_API_KEY") or "").strip()
         questions = body.get("questions")
         if not isinstance(questions, dict) or not questions:
             return self._send(400, {"error": "Primitives must be a non-empty JSON object."})
         if not body.get("state"):
             return self._send(400, {"error": "The coding request is empty."})
-        status, result = call_jev(api_key, body.get("model") or "jev-latest", body["state"], questions)
-        self._send(200, {"status": status, "ok": 200 <= status < 300, "result": result})
+        status, result = call_von(base_url, api_key, body.get("model") or "von-latest", body["state"], questions)
+        reply = {"status": status, "ok": 200 <= status < 300, "result": result}
+        if isinstance(result, dict) and result.pop("unreachable", False):
+            reply["unreachable"] = True
+        self._send(200, reply)
 
     def answer(self):
         """Forward one streaming Messages request and pipe the SSE bytes back unchanged."""
@@ -116,7 +149,7 @@ class Handler(BaseHTTPRequestHandler):
             "anthropic-version": "2023-06-01",
             "Content-Type": "application/json",
             "Accept": "text/event-stream",
-            "User-Agent": "jev-router/1.0",
+            "User-Agent": "von-router/1.0",
         }
         if "fallbacks" in req_body:
             headers["anthropic-beta"] = "server-side-fallback-2026-07-01"
@@ -154,11 +187,12 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Local web app that routes coding requests to Claude via Jev.")
+    parser = argparse.ArgumentParser(description="Local web app that routes coding requests to Claude via Von.")
     parser.add_argument("--port", type=int, default=8766)
     args = parser.parse_args()
     server = ThreadingHTTPServer(("127.0.0.1", args.port), Handler)
-    print(f"Jev Semantic Router is at http://127.0.0.1:{args.port}  (Ctrl+C to stop)")
+    print(f"Von Semantic Router is at http://127.0.0.1:{args.port}  (Ctrl+C to stop)")
+    print(f"Von is expected at {VON_BASE_URL}  (pip install von-sdk, then von serve)")
     try:
         server.serve_forever()
     except KeyboardInterrupt:

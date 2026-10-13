@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Jev Semantic Router</title>
+<title>Von Semantic Router</title>
 <meta name="robots" content="noindex">
 <meta name="referrer" content="no-referrer">
 <style>
@@ -26,6 +26,8 @@
   input[type=range] { padding:0; }
   textarea { font:13px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; resize:vertical; }
   .row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .row.three { grid-template-columns:1fr 1fr 1fr; }
+  @media (max-width:820px) { .row.three { grid-template-columns:1fr; } }
   .actions { display:flex; gap:10px; align-items:center; margin-top:14px; flex-wrap:wrap; }
   button { padding:9px 18px; border-radius:8px; border:1px solid var(--line); background:var(--card); color:var(--ink); font:inherit; font-weight:600; cursor:pointer; }
   button.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
@@ -59,15 +61,19 @@
 </head>
 <body>
 <main id="app">
-  <h1>Jev Semantic Router</h1>
-  <p class="sub">Type a coding request. TypeSafe's Jev model rates how hard it is, the cheapest Claude tier that covers that difficulty is chosen, and that model answers. Keys are used for the request only and are never stored.</p>
+  <h1>Von Semantic Router</h1>
+  <p class="sub">Type a coding request. Von, an open-source System One decision model running on your own machine, rates how hard it is, the cheapest Claude tier that covers that difficulty is chosen, and that model answers. Keys are used for the request only and are never stored.</p>
 
   <div class="grid">
     <form class="card" id="form" autocomplete="off">
-      <div class="row">
+      <div class="row three">
         <div>
-          <label for="tskey">TypeSafe API key <span class="hint" id="tshint"></span></label>
-          <input id="tskey" type="password" placeholder="TypeSafe API key" autocomplete="off" spellcheck="false">
+          <label for="vonurl">Von server <span class="hint" id="vonhint"></span></label>
+          <input id="vonurl" type="url" placeholder="http://127.0.0.1:8000" autocomplete="off" spellcheck="false">
+        </div>
+        <div>
+          <label for="vonkey">Von API key <span class="hint" id="vonkeyhint">optional</span></label>
+          <input id="vonkey" type="password" placeholder="only if the server sets VON_API_KEY" autocomplete="off" spellcheck="false">
         </div>
         <div>
           <label for="antkey">Anthropic API key <span class="hint" id="anthint"></span></label>
@@ -88,9 +94,9 @@
           </div>
         </div>
         <div>
-          <label for="force">Force a tier <span class="hint">skips Jev</span></label>
+          <label for="force">Force a tier <span class="hint">skips Von</span></label>
           <select id="force">
-            <option value="">Let Jev decide</option>
+            <option value="">Let Von decide</option>
             <option value="simple">Low · Haiku</option>
             <option value="medium">Medium · Sonnet</option>
             <option value="advanced">High · Opus</option>
@@ -99,19 +105,19 @@
       </div>
 
       <details>
-        <summary>Difficulty rubric sent to Jev</summary>
+        <summary>Difficulty rubric sent to Von</summary>
         <pre id="rubric"></pre>
       </details>
 
       <div class="actions">
-        <button class="primary" id="run" type="submit">Step 1 · Route with Jev</button>
+        <button class="primary" id="run" type="submit">Step 1 · Route with Von</button>
         <button type="button" id="example">Load example</button>
         <span class="status" id="status"></span>
       </div>
     </form>
 
     <div class="card">
-      <div id="output"><p class="empty">Step 1 shows Jev's routing decision here. Step 2, generating the answer with the chosen model, is a separate button that appears with the decision. Press Cmd or Ctrl + Enter to run the next step.</p></div>
+      <div id="output"><p class="empty">Step 1 shows Von's routing decision here. Step 2, generating the answer with the chosen model, is a separate button that appears with the decision. Press Cmd or Ctrl + Enter to run the next step.</p></div>
     </div>
   </div>
 </main>
@@ -138,16 +144,22 @@ const EXAMPLES = [
   "design a sharded rate limiter that stays correct across a Redis failover",
 ];
 
-// Jev goes through the local app server (router.py) when this page is served
-// by it, otherwise through the hosted relay, because TypeSafe rejects direct
-// browser calls. Claude goes straight from the browser to api.anthropic.com
-// on the hosted page, and through the local server when run locally. If the
-// direct call fails at the network level (an extension, proxy, or network
-// blocking api.anthropic.com), the page retries through the relay.
-const RELAY_URL = "https://jev-relay-rajatghosh.netlify.app/systemone";
+// Von (https://huggingface.co/wfzyx/von) is an open-source decision model with
+// no hosted API, so it runs as a local server: `pip install von-sdk`, then
+// `von serve`. Its /v1/systemone endpoint is wire-compatible with TypeSafe's
+// Jev API and allows cross-origin calls, so the hosted page calls it straight
+// from the browser. When this page is served by the local app server
+// (router.py), the call is forwarded through it instead, so VON_BASE_URL and
+// VON_API_KEY from its environment apply. Claude goes straight from the
+// browser to api.anthropic.com on the hosted page, and through the local
+// server when run locally. If the direct call fails at the network level (an
+// extension, proxy, or network blocking api.anthropic.com), the page retries
+// through the relay.
+const DEFAULT_VON_URL = "http://127.0.0.1:8000";
+const VON_MODEL = "von-latest";
 const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
 const ANTHROPIC_RELAY_URL = "https://jev-relay-rajatghosh.netlify.app/messages";
-let localServer = false, envKeys = { typesafe: false, anthropic: false };
+let localServer = false, envKeys = { von: false, anthropic: false }, serverVonUrl = "";
 
 const $ = (id) => document.getElementById(id);
 const pretty = (v) => JSON.stringify(v, null, 2);
@@ -157,15 +169,20 @@ const pct = (p) => (p * 100).toFixed(p >= 0.0995 ? 0 : 1) + "%";
 $("rubric").textContent = pretty(QUESTIONS);
 
 function saveDraft() {
-  try { sessionStorage.setItem("jev-router-draft", JSON.stringify({ q: $("query").value, c: $("coverage").value })); } catch {}
+  try { sessionStorage.setItem("von-router-draft", JSON.stringify({ q: $("query").value, c: $("coverage").value })); } catch {}
+  // The server address is not a secret, so it is kept across visits.
+  try { localStorage.setItem("von-router-url", $("vonurl").value.trim()); } catch {}
 }
 function restoreDraft() {
+  try { const u = localStorage.getItem("von-router-url"); if (u) $("vonurl").value = u; } catch {}
   try {
-    const d = JSON.parse(sessionStorage.getItem("jev-router-draft"));
+    const d = JSON.parse(sessionStorage.getItem("von-router-draft"));
     if (d && d.q) { $("query").value = d.q; if (d.c) $("coverage").value = d.c; return true; }
   } catch {}
   return false;
 }
+// The Von server base URL the browser calls on the hosted page.
+function vonBase() { return ($("vonurl").value.trim() || DEFAULT_VON_URL).replace(/\/+$/, ""); }
 let exampleIndex = 0;
 function loadExample() { $("query").value = EXAMPLES[exampleIndex++ % EXAMPLES.length]; }
 
@@ -187,25 +204,29 @@ function describeApiError(who, status, result) {
   return `${who} returned ${status}. ${hints[status] || ""}\n${msg}`.trim();
 }
 
-// Ask Jev for P(simple), P(medium), P(advanced). Returns {probs, score, confidence, raw} or {error}.
-async function classify(tsKey, query) {
+// Ask Von for P(simple), P(medium), P(advanced). Returns {probs, score, confidence, raw} or {error}.
+// An unreachable server is a non-fatal error, so the caller falls back to the strongest tier.
+async function classify(vonKey, query) {
+  const body = { model: VON_MODEL, state: query, questions: QUESTIONS };
   let res;
   if (localServer) {
-    res = await fetch("api/classify", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ api_key: tsKey, state: query, questions: QUESTIONS }) });
+    res = await fetch("api/classify", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ von_url: $("vonurl").value.trim(), api_key: vonKey, ...body }) });
     const data = await readJson(res);
     if (!res.ok) return { error: data.error || "Request failed.", status: res.status, fatal: true };
-    if (!data.ok) return { error: describeApiError("Jev API", data.status, data.result), raw: data.result, status: data.status, fatal: data.status < 500 };
-    return parseJev(data.result);
+    if (data.unreachable) return { error: data.result.error, status: data.status };
+    if (!data.ok) return { error: describeApiError("Von", data.status, data.result), raw: data.result, status: data.status, fatal: data.status < 500 };
+    return parseVon(data.result);
   }
-  if (!tsKey) return { error: "Enter your TypeSafe API key.", fatal: true };
-  res = await fetch(RELAY_URL, { method: "POST", headers: { Authorization: "Bearer " + tsKey, "Content-Type": "application/json" }, body: JSON.stringify({ model: "jev-latest", state: query, questions: QUESTIONS }) });
+  const headers = { "Content-Type": "application/json" };
+  if (vonKey) headers.Authorization = "Bearer " + vonKey;
+  res = await fetch(vonBase() + "/v1/systemone", { method: "POST", headers, body: JSON.stringify(body) });
   const result = await readJson(res);
-  if (!res.ok) return { error: describeApiError("Jev API", res.status, result), raw: result, status: res.status, fatal: res.status < 500 };
-  return parseJev(result);
+  if (!res.ok) return { error: describeApiError("Von", res.status, result), raw: result, status: res.status, fatal: res.status < 500 };
+  return parseVon(result);
 }
-function parseJev(result) {
+function parseVon(result) {
   const a = result && result.answers && result.answers.difficulty;
-  if (!a || !a.probabilities) return { error: "Jev returned no difficulty answer.", raw: result };
+  if (!a || !a.probabilities) return { error: "Von returned no difficulty answer.", raw: result };
   const probs = {};
   for (const [k, p] of Object.entries(a.probabilities)) { const t = TIERS[Number(k)]; if (t && typeof p === "number") probs[t] = p; }
   return { probs, score: a.score, confidence: a.confidence, raw: result };
@@ -281,18 +302,18 @@ function renderDecision(tier, decision, coverage, forced) {
   v.append(el("span", "tag chosen", forced ? "forced" : decision && decision.outage ? "fallback" : "chosen"));
   v.append(el("small", null, `effort ${m.effort}, max ${m.max_tokens.toLocaleString()} tokens`));
   box.append(v);
-  if (!decision) { box.append(el("p", "note", "Jev was skipped because a tier was forced.")); return box; }
+  if (!decision) { box.append(el("p", "note", "Von was skipped because a tier was forced.")); return box; }
   if (decision.outage) {
-    box.append(el("div", "error", "Jev failed, so the request falls back to the strongest tier.\n" + decision.outage));
-    if (decision.raw !== undefined) { const d = el("details"); d.append(el("summary", null, "Raw Jev response"), el("pre", null, pretty(decision.raw))); box.append(d); }
+    box.append(el("div", "error", "Von could not be reached or failed, so the request falls back to the strongest tier.\n" + decision.outage));
+    if (decision.raw !== undefined) { const d = el("details"); d.append(el("summary", null, "Raw Von response"), el("pre", null, pretty(decision.raw))); box.append(d); }
     return box;
   }
   let cum = 0;
   for (const t of TIERS) { const p = decision.probs[t] || 0; cum += p; box.append(bar(`${MODELS[t].label} · ${MODELS[t].model.replace("claude-", "")}`, p, cum, t === tier)); }
   const expected = typeof decision.score === "number" ? decision.score.toFixed(2) : "?";
   const conf = typeof decision.confidence === "number" ? pct(decision.confidence) : "?";
-  box.append(el("p", "note", `Cheapest tier whose cumulative probability reaches coverage ${coverage.toFixed(2)}. Jev expected level ${expected} / 2, confidence ${conf}.`));
-  const d = el("details"); d.append(el("summary", null, "Raw Jev response"), el("pre", null, pretty(decision.raw)));
+  box.append(el("p", "note", `Cheapest tier whose cumulative probability reaches coverage ${coverage.toFixed(2)}. Von expected level ${expected} / 2, confidence ${conf}.`));
+  const d = el("details"); d.append(el("summary", null, "Raw Von response"), el("pre", null, pretty(decision.raw)));
   box.append(d);
   return box;
 }
@@ -309,14 +330,14 @@ let pending = null;
 
 function setBusy(b) { busy = b; $("run").disabled = b; const g = $("generate"); if (g) g.disabled = b; }
 
-// Step 1: ask Jev, show the decision and the step 2 controls.
+// Step 1: ask Von, show the decision and the step 2 controls.
 async function route() {
   if (busy) return;
   const query = $("query").value.trim();
   if (!query) return showError("Enter a coding request.");
   const coverage = Number($("coverage").value);
   const forced = $("force").value;
-  const tsKey = $("tskey").value.trim();
+  const vonKey = $("vonkey").value.trim();
   saveDraft();
 
   setBusy(true); pending = null;
@@ -325,19 +346,23 @@ async function route() {
   try {
     let tier = forced, decision = null;
     if (!forced) {
-      $("status").textContent = "Asking Jev…";
-      try { decision = await classify(tsKey, query); }
-      catch (e) { decision = { error: "Could not reach " + (localServer ? "the local app server. Is router.py still running?" : "the relay. Check your connection.") + "\n" + e.message }; }
+      $("status").textContent = "Asking Von…";
+      try { decision = await classify(vonKey, query); }
+      catch (e) {
+        decision = { error: localServer
+          ? "Could not reach the local app server. Is router.py still running?\n" + e.message
+          : `Could not reach the Von server at ${vonBase()}. Is \`von serve\` running there? Some browsers also block an https page from calling a local http server.\n` + e.message };
+      }
       if (decision.error && decision.fatal) return showError(decision.error, decision.raw);
       if (decision.error) { tier = TIERS[TIERS.length - 1]; decision = { outage: decision.error, raw: decision.raw }; }
       else tier = pickTier(decision.probs, coverage);
     }
-    const tJev = Math.round(performance.now() - t0);
+    const tVon = Math.round(performance.now() - t0);
     const sec = renderDecision(tier, decision, coverage, Boolean(forced));
-    pending = { query, tier, tJev };
+    pending = { query, tier, tVon };
     sec.append(renderStep2(tier));
     out.append(sec);
-    $("status").textContent = forced ? "tier forced, Jev skipped" : `routed in ${tJev} ms`;
+    $("status").textContent = forced ? "tier forced, Von skipped" : `routed in ${tVon} ms`;
   } catch (e) {
     $("status").textContent = "";
     out.append(el("div", "error", "Routing failed.\n" + e.message));
@@ -346,14 +371,14 @@ async function route() {
   }
 }
 
-// The step 2 controls: a model picker preset to Jev's choice, and the generate button.
+// The step 2 controls: a model picker preset to Von's choice, and the generate button.
 function renderStep2(tier) {
   const row = el("div", "step2");
   const pick = el("select"); pick.id = "pickTier";
   for (const t of TIERS) { const o = el("option", null, `${MODELS[t].label} · ${MODELS[t].model}`); o.value = t; if (t === tier) o.selected = true; pick.append(o); }
   const btn = el("button", "primary", "Step 2 · Generate answer"); btn.id = "generate"; btn.type = "button";
   btn.addEventListener("click", generate);
-  pick.addEventListener("change", () => { btn.textContent = pick.value === tier ? "Step 2 · Generate answer" : "Step 2 · Generate answer (overriding Jev)"; });
+  pick.addEventListener("change", () => { btn.textContent = pick.value === tier ? "Step 2 · Generate answer" : "Step 2 · Generate answer (overriding Von)"; });
   row.append(btn, el("span", "hint", "with"), pick);
   return row;
 }
@@ -389,7 +414,7 @@ async function generate() {
     if (r.stop_reason === "refusal") sec.append(el("p", "error", "The model declined this request." + (r.stop_details && r.stop_details.explanation ? "\n" + r.stop_details.explanation : "")));
     else if (r.stop_reason === "max_tokens") sec.append(el("p", "note", "The reply hit the tier's token limit and was cut off."));
     const served = r.served_by && r.served_by !== r.model ? ` (served by ${r.served_by})` : "";
-    $("status").textContent = `${r.model}${served} · routed in ${pending.tJev} ms · answered in ${ms} ms · in ${r.usage.input_tokens ?? "?"} · out ${r.usage.output_tokens ?? "?"} tokens${r.viaRelay ? " · via relay" : ""}`;
+    $("status").textContent = `${r.model}${served} · routed in ${pending.tVon} ms · answered in ${ms} ms · in ${r.usage.input_tokens ?? "?"} · out ${r.usage.output_tokens ?? "?"} tokens${r.viaRelay ? " · via relay" : ""}`;
     if (r.viaRelay) sec.append(el("p", "note", "Your browser could not reach api.anthropic.com directly, so this answer was fetched through the relay. Keys pass through it in memory only."));
   } catch (e) {
     $("status").textContent = "";
@@ -402,13 +427,15 @@ async function generate() {
 }
 
 function updateNotes() {
-  $("tshint").textContent = envKeys.typesafe ? "optional, TYPESAFE_API_KEY is set" : "";
+  $("vonhint").textContent = localServer ? "optional, defaults to the app server's VON_BASE_URL" : "pip install von-sdk, then von serve";
+  $("vonurl").placeholder = serverVonUrl || DEFAULT_VON_URL;
+  $("vonkeyhint").textContent = envKeys.von ? "optional, VON_API_KEY is set" : "optional";
+  $("vonkey").placeholder = envKeys.von ? "Using VON_API_KEY" : "only if the server sets VON_API_KEY";
   $("anthint").textContent = envKeys.anthropic ? "optional, ANTHROPIC_API_KEY is set" : "";
-  $("tskey").placeholder = envKeys.typesafe ? "Using TYPESAFE_API_KEY" : "TypeSafe API key";
   $("antkey").placeholder = envKeys.anthropic ? "Using ANTHROPIC_API_KEY" : "Anthropic API key";
   $("keynote").textContent = localServer
-    ? "Both calls go through the local app server. Keys are forwarded in memory and never written to disk."
-    : "The Jev call goes through a relay to api.typesafe.ai, because TypeSafe blocks direct calls from websites. The Claude call goes from your browser straight to api.anthropic.com, falling back to the relay if your browser cannot reach it. Neither key is logged or stored.";
+    ? "Both calls go through the local app server: the Von call on to your Von server, the Claude call on to api.anthropic.com. Keys are forwarded in memory and never written to disk."
+    : "Von has no hosted API. The Von call goes from your browser to the Von server you name above, normally one started on this machine with von serve. The Claude call goes from your browser straight to api.anthropic.com, falling back to a relay if your browser cannot reach it. Neither key is logged or stored.";
 }
 
 $("form").addEventListener("submit", (e) => { e.preventDefault(); route(); });
@@ -424,8 +451,8 @@ if (!restoreDraft()) loadExample();
 updateNotes();
 // The local app answers api/config; on the hosted site that request fails.
 fetch("api/config").then((r) => (r.ok ? r.json() : Promise.reject())).then((c) => {
-  if (!c || typeof c.typesafe_env_key !== "boolean") throw 0;
-  localServer = true; envKeys = { typesafe: c.typesafe_env_key, anthropic: Boolean(c.anthropic_env_key) };
+  if (!c || typeof c.von_env_key !== "boolean") throw 0;
+  localServer = true; envKeys = { von: c.von_env_key, anthropic: Boolean(c.anthropic_env_key) }; serverVonUrl = String(c.von_url || "");
 }).catch(() => {}).finally(updateNotes);
 </script>
 </body>
