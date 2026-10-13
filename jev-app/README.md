@@ -94,9 +94,13 @@ another server, with `VON_API_KEY` as the bearer token when the Von server
 is started with one; the Anthropic key field falls back to `ANTHROPIC_API_KEY`.
 The hosted copy at https://rajatghosh.me/jev-router.html sends the Von call
 from the browser straight to the Von server typed into the page (Von allows
-cross-origin calls by default, and Chrome and Firefox let an https page call
-`127.0.0.1` over http) and the Claude call from the browser straight to
-`api.anthropic.com`, using the API's browser-access header. If that direct
+cross-origin calls by default) and the Claude call from the browser straight
+to `api.anthropic.com`, using the API's browser-access header. Browsers are
+tightening the rules on an https page calling a plain http server on
+localhost: Safari blocks it (the fetch fails with "Load failed") and Chrome
+142 blocks it under Private Network Access. When that happens the page says
+so and points to the local copy at http://127.0.0.1:8766, which works in
+every browser because the page and Von are both on localhost. If that direct
 call fails at the network level (the browser reports "Failed to fetch",
 typically an extension, proxy, or network blocking the host), the page
 retries through `relay/netlify/edge-functions/messages.js` at
