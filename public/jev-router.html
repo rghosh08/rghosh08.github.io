@@ -66,7 +66,7 @@
 <body>
 <main id="app">
   <h1>Von Semantic Router</h1>
-  <p class="sub">Type a coding request. Von, an open-source System One decision model running on your own machine, rates how hard it is, the cheapest Claude tier that covers that difficulty is chosen, and that model answers. Keys are used for the request only and are never stored.</p>
+  <p class="sub">Type a coding request. Von, an open-source System One decision model running on a Hugging Face Space, rates how hard it is, the cheapest Claude tier that covers that difficulty is chosen, and that model answers. Keys are used for the request only and are never stored.</p>
 
   <div class="grid">
     <form class="card" id="form" autocomplete="off">
@@ -150,22 +150,24 @@ const EXAMPLES = [
 ];
 
 // Von (https://huggingface.co/wfzyx/von) is an open-source decision model with
-// no hosted API, so it runs as a local server: `pip install von-sdk`, then
-// `von serve`. Its /v1/systemone endpoint is wire-compatible with TypeSafe's
-// Jev API and allows cross-origin calls, so the hosted page calls it straight
-// from the browser. When this page is served by the local app server
+// no vendor API, so this site runs it on a Hugging Face Space (built in
+// jev-app/von-space/) and the browser calls that over https. Its /v1/systemone
+// endpoint is wire-compatible with TypeSafe's Jev API and allows cross-origin
+// calls. Any other Von server can be typed into the page, including one run
+// locally with `von serve`. When this page is served by the local app server
 // (router.py), the call is forwarded through it instead, so VON_BASE_URL and
 // VON_API_KEY from its environment apply. Claude goes straight from the
 // browser to api.anthropic.com on the hosted page, and through the local
 // server when run locally. If the direct call fails at the network level (an
 // extension, proxy, or network blocking api.anthropic.com), the page retries
 // through the relay.
-const DEFAULT_VON_URL = "http://127.0.0.1:8000";
-// The local copy of this page, served by router.py next to Von. Browsers
-// increasingly refuse to let an https page call a plain http server on
-// localhost (Safari, and Chrome's Private Network Access), so the hosted page
-// sends people there when the Von call fails.
+const DEFAULT_VON_URL = "https://rghosh8-von.hf.space";
+// The local copy of this page, served by router.py. Browsers refuse to let an
+// https page call a plain http server on localhost (Safari, and Chrome's
+// Private Network Access), so when someone points the hosted page at a local
+// Von server and the call fails, it sends them there.
 const LOCAL_COPY_URL = "http://127.0.0.1:8766/";
+const isLocalUrl = (u) => /^https?:\/\/(127\.0\.0\.1|localhost|\[::1\])(:|\/|$)/i.test(u);
 const VON_MODEL = "von-latest";
 const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
 const ANTHROPIC_RELAY_URL = "https://jev-relay-rajatghosh.netlify.app/messages";
@@ -222,7 +224,8 @@ async function checkVon() {
   } catch {
     $("vonstart").hidden = true;
     if (localServer) showVon("", "Could not reach the local app server. Is router.py still running?");
-    else showVon("", `Von is not reachable at ${vonBase()}. If it is not running, start it with von serve or by double-clicking jev-app/start-von.command. If it is running, your browser is blocking the call (Safari and recent Chrome block websites from calling local http servers); use the local copy at `, localCopyLink(), ", which works in every browser.");
+    else if (isLocalUrl(vonBase())) showVon("", `Von is not reachable at ${vonBase()}. If it is not running, start it with von serve or by double-clicking jev-app/start-von.command. If it is running, your browser is blocking the call (Safari and recent Chrome block websites from calling local http servers); use the local copy at `, localCopyLink(), ", which works in every browser.");
+    else showVon("", `Von is not reachable at ${vonBase()}. A free Hugging Face Space sleeps when idle and takes a minute or two to wake; this check has nudged it, so try again shortly.`);
   }
 }
 async function startVon() {
@@ -404,7 +407,9 @@ async function route() {
       catch (e) {
         decision = { error: localServer
           ? "Could not reach the local app server. Is router.py still running?\n" + e.message
-          : `Could not reach the Von server at ${vonBase()}. Either it is not running (start it with von serve, or double-click jev-app/start-von.command), or your browser blocked this https page from calling a local http server, which Safari and recent Chrome do. In that case use the local copy at ${LOCAL_COPY_URL} instead; it works in every browser.\n` + e.message };
+          : isLocalUrl(vonBase())
+            ? `Could not reach the Von server at ${vonBase()}. Either it is not running (start it with von serve, or double-click jev-app/start-von.command), or your browser blocked this https page from calling a local http server, which Safari and recent Chrome do. In that case use the local copy at ${LOCAL_COPY_URL} instead; it works in every browser.\n` + e.message
+            : `Could not reach the Von server at ${vonBase()}. A free Hugging Face Space sleeps when idle and takes a minute or two to wake, so routing again shortly usually works.\n` + e.message };
       }
       if (decision.error && decision.fatal) return showError(decision.error, decision.raw);
       if (decision.error) { tier = TIERS[TIERS.length - 1]; decision = { outage: decision.error, raw: decision.raw }; }
@@ -481,7 +486,7 @@ async function generate() {
 }
 
 function updateNotes() {
-  $("vonhint").textContent = localServer ? "optional, defaults to the app server's VON_BASE_URL" : "pip install von-sdk, then von serve";
+  $("vonhint").textContent = localServer ? "optional, defaults to the app server's VON_BASE_URL" : "optional, defaults to this site's Hugging Face Space";
   $("vonurl").placeholder = serverVonUrl || DEFAULT_VON_URL;
   $("vonkeyhint").textContent = envKeys.von ? "optional, VON_API_KEY is set" : "optional";
   $("vonkey").placeholder = envKeys.von ? "Using VON_API_KEY" : "only if the server sets VON_API_KEY";
@@ -489,7 +494,7 @@ function updateNotes() {
   $("antkey").placeholder = envKeys.anthropic ? "Using ANTHROPIC_API_KEY" : "Anthropic API key";
   $("keynote").textContent = localServer
     ? "Both calls go through the local app server: the Von call on to your Von server, the Claude call on to api.anthropic.com. Keys are forwarded in memory and never written to disk."
-    : "Von has no hosted API. The Von call goes from your browser to the Von server you name above, normally one started on this machine with von serve. The Claude call goes from your browser straight to api.anthropic.com, falling back to a relay if your browser cannot reach it. Neither key is logged or stored.";
+    : "The Von call goes from your browser to the Von server above, by default a Hugging Face Space running the open-source model for this site. The Claude call goes from your browser straight to api.anthropic.com, falling back to a relay if your browser cannot reach it. Neither key is logged or stored.";
 }
 
 $("form").addEventListener("submit", (e) => { e.preventDefault(); route(); });

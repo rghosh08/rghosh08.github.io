@@ -2,22 +2,25 @@
 """Von Semantic Router: a tiny local web app that routes coding requests to Claude.
 
 Run:   python3 router.py          then open http://127.0.0.1:8766
-Needs: Python 3.8+, no third-party packages, and a running Von server
-       (pip install von-sdk, then von serve; it listens on port 8000).
+Needs: Python 3.8+, no third-party packages. Von is reached at VON_BASE_URL,
+       by default the site's Hugging Face Space; set it to
+       http://127.0.0.1:8000 (start-von.command does) to use a local
+       `von serve` instead.
 
 The page (public/jev-router.html) asks Von, an open-source System One decision
 model (https://huggingface.co/wfzyx/von), how hard a coding request is, picks
 the cheapest Claude tier (Haiku, Sonnet, Opus) whose cumulative probability
 reaches the coverage threshold, and streams that model's answer. This server
 serves the page and forwards both calls. The Von call goes to VON_BASE_URL
-(default http://127.0.0.1:8000, or the address typed into the page) with
-VON_API_KEY as the bearer token if the Von server requires one. Keys are sent
+(default https://rghosh8-von.hf.space, or the address typed into the page)
+with VON_API_KEY as the bearer token if the Von server requires one. Keys are sent
 with each request and never written to disk. Empty key fields fall back to
 the VON_API_KEY and ANTHROPIC_API_KEY environment variables.
 
 The same page is published at https://rajatghosh.me/jev-router.html, where
-the browser calls the Von server directly (Von allows cross-origin calls by
-default) and the Claude call goes straight to api.anthropic.com.
+the browser calls the Von Space directly (Von allows cross-origin calls by
+default) and the Claude call goes straight to api.anthropic.com. The Space is
+defined in von-space/.
 """
 import argparse
 import atexit
@@ -35,7 +38,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 ANTHROPIC_URL = os.environ.get("ANTHROPIC_API_URL", "https://api.anthropic.com/v1/messages")
-VON_BASE_URL = os.environ.get("VON_BASE_URL", "http://127.0.0.1:8000")
+VON_BASE_URL = os.environ.get("VON_BASE_URL", "https://rghosh8-von.hf.space")
 INDEX = Path(__file__).resolve().parent.parent / "public" / "jev-router.html"
 MAX_BODY = 2 * 1024 * 1024
 ALLOWED_MODELS = {"claude-haiku-5-5", "claude-sonnet-5-5", "claude-opus-5-5"}
@@ -144,7 +147,7 @@ def call_von(base_url, api_key, model, state, questions):
     except urllib.error.HTTPError as err:
         status, raw = err.code, err.read()
     except (urllib.error.URLError, TimeoutError, OSError) as err:
-        return 502, {"error": f"Could not reach the Von server at {base_url}: {err}. Start it with `von serve`.", "unreachable": True}
+        return 502, {"error": f"Could not reach the Von server at {base_url}: {err}.", "unreachable": True}
     try:
         return status, json.loads(raw)
     except ValueError:

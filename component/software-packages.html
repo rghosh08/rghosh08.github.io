@@ -76,9 +76,9 @@
         <div class="pub">
           <div class="meta">
             <div class="title"><a href="https://rajatghosh.me/jev-router.html" target="_blank" rel="noopener noreferrer">Von Semantic Router</a></div>
-            <div class="venue">Web app · Python local server · Haiku / Sonnet / Opus</div>
-            <p class="summary">Routes a coding request to the cheapest Claude model that can handle it. <a href="https://huggingface.co/wfzyx/von" target="_blank" rel="noopener noreferrer">Von</a>, an open-source System One decision model (395M parameters, Apache-2.0) running on your own machine, scores the request on a three-level difficulty rubric with calibrated probabilities; the router picks the first tier (Haiku, Sonnet, Opus) whose cumulative probability clears a coverage threshold, so uncertain requests escalate rather than fail on a weak model, then streams that model's answer. Ships as a hosted page and a local server, plus a Jev-based CLI with an offline test suite.</p>
-            <p class="pkg-install"><code>pip install von-sdk &amp;&amp; von serve &nbsp;# then python3 router.py</code></p>
+            <div class="venue">Web app · Hugging Face Space · Haiku / Sonnet / Opus</div>
+            <p class="summary">Routes a coding request to the cheapest Claude model that can handle it. <a href="https://huggingface.co/wfzyx/von" target="_blank" rel="noopener noreferrer">Von</a>, an open-source System One decision model (395M parameters, Apache-2.0) served from a Hugging Face Space, scores the request on a three-level difficulty rubric with calibrated probabilities; the router picks the first tier (Haiku, Sonnet, Opus) whose cumulative probability clears a coverage threshold, so uncertain requests escalate rather than fail on a weak model, then streams that model's answer. Ships as a hosted page, a local server, and the Space's Dockerfile, plus a Jev-based CLI with an offline test suite.</p>
+            <p class="pkg-install"><code>python3 router.py &nbsp;# local copy; VON_BASE_URL=http://127.0.0.1:8000 for a local von serve</code></p>
             <div class="links">
               <a href="https://rajatghosh.me/jev-router.html" target="_blank" rel="noopener noreferrer">Open Von Semantic Router</a>
               <a href="https://github.com/rghosh08/rghosh08.github.io/tree/rajat/jev-app" target="_blank" rel="noopener noreferrer">Source</a>

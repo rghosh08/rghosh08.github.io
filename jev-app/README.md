@@ -47,9 +47,17 @@ whose cumulative probability reaches the coverage threshold (default 0.8), so
 uncertain requests escalate instead of landing on a weak model, then streams
 that model's answer.
 
-Von has no hosted API, so it runs on your machine. Its `/v1/systemone`
-endpoint is wire-compatible with the Jev API, which is why the page needed no
-change to its rubric or parsing:
+Von has no vendor API, so this site runs it on a public Hugging Face Space,
+https://rghosh8-von.hf.space, defined in `von-space/` (a two-line Dockerfile
+on the upstream `ghcr.io/wfzyx/von:cpu` image). `sh von-space/deploy.sh`
+creates or updates the Space from a logged-in Hugging Face account and waits
+until it is running. The free CPU tier sleeps after two idle days and takes a
+minute or two to wake; the page's status check on load nudges it awake. Von's
+`/v1/systemone` endpoint is wire-compatible with the Jev API, which is why the
+page needed no change to its rubric or parsing.
+
+Any other Von server can be typed into the page, or set as `VON_BASE_URL` for
+`router.py`, including one on your own machine:
 
 ```bash
 pip install "von-sdk>=1.3.7"
@@ -80,27 +88,28 @@ safety-classifier refusal is retried on a fallback model server-side.
 python3 router.py         # then open http://127.0.0.1:8766
 ```
 
-For a one-click session on a Mac, double-click `start-von.command` in
-Finder. It starts `von serve` and `router.py` (skipping whichever is already
-running), waits for Von, and opens the page. Closing its Terminal window stops
+For a one-click local session on a Mac, double-click `start-von.command` in
+Finder. It starts `von serve` and `router.py` with `VON_BASE_URL` pointed at
+the local Von (skipping whichever is already running), waits for Von, and
+opens the page. Closing its Terminal window stops
 both. The page also shows a Von status line; when served by `router.py` and
 Von is not running, a **Start Von** button starts it as a child of the app
 server (looked for at `VON_BIN`, then `~/.venvs/von/bin/von`, then on `PATH`),
 so it stops when the app server does.
 
 Locally, both calls go through `router.py`. The Von call goes to
-`VON_BASE_URL` (default `http://127.0.0.1:8000`) unless the page names
-another server, with `VON_API_KEY` as the bearer token when the Von server
+`VON_BASE_URL` (default the Space above) unless the page names another
+server, with `VON_API_KEY` as the bearer token when the Von server
 is started with one; the Anthropic key field falls back to `ANTHROPIC_API_KEY`.
 The hosted copy at https://rajatghosh.me/jev-router.html sends the Von call
 from the browser straight to the Von server typed into the page (Von allows
 cross-origin calls by default) and the Claude call from the browser straight
-to `api.anthropic.com`, using the API's browser-access header. Browsers are
-tightening the rules on an https page calling a plain http server on
-localhost: Safari blocks it (the fetch fails with "Load failed") and Chrome
-142 blocks it under Private Network Access. When that happens the page says
-so and points to the local copy at http://127.0.0.1:8766, which works in
-every browser because the page and Von are both on localhost. If that direct
+to `api.anthropic.com`, using the API's browser-access header. Pointing the
+hosted page at a Von server on localhost does not work in Safari (the fetch
+fails with "Load failed") or in Chrome 142 (Private Network Access), since
+both block an https page from calling a plain http server; the page says so
+and points to the local copy at http://127.0.0.1:8766, where the page and Von
+are both on localhost. If that direct
 call fails at the network level (the browser reports "Failed to fetch",
 typically an extension, proxy, or network blocking the host), the page
 retries through `relay/netlify/edge-functions/messages.js` at
