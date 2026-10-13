@@ -35,6 +35,10 @@
   .status { color:var(--muted); font-size:13px; }
   .error { background:var(--errbg); color:var(--err); border-radius:8px; padding:10px 12px; white-space:pre-wrap; word-break:break-word; }
   .note { color:var(--muted); font-size:13px; margin:6px 0 0; }
+  .vonstatus { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .vonstatus button { padding:4px 10px; font-size:13px; }
+  .dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--muted); margin-right:6px; vertical-align:middle; }
+  .dot.up { background:#2e9e5b; } .dot.wait { background:#d99a1e; }
   h2 { font-size:15px; margin:0 0 8px; }
   .section { border-top:1px solid var(--line); padding:12px 0; }
   .section:first-child { border-top:0; padding-top:0; }
@@ -80,6 +84,7 @@
           <input id="antkey" type="password" placeholder="Anthropic API key" autocomplete="off" spellcheck="false">
         </div>
       </div>
+      <p class="note vonstatus"><span id="vonstatus"><span class="dot"></span>Checking Von…</span><button type="button" id="vonstart" hidden>Start Von</button></p>
       <p class="note" id="keynote"></p>
 
       <label for="query">Coding request</label>
@@ -183,6 +188,45 @@ function restoreDraft() {
 }
 // The Von server base URL the browser calls on the hosted page.
 function vonBase() { return ($("vonurl").value.trim() || DEFAULT_VON_URL).replace(/\/+$/, ""); }
+
+// The Von status line. Locally the app server reports on (and can start) the
+// server at its VON_BASE_URL; on the hosted page the browser pings /health.
+let vonPoll = null;
+function showVon(state, text) {
+  const dot = el("span", "dot" + (state ? " " + state : ""));
+  $("vonstatus").replaceChildren(dot, text);
+}
+async function checkVon() {
+  clearTimeout(vonPoll);
+  try {
+    if (localServer) {
+      const s = await (await fetch("api/von")).json();
+      $("vonstart").hidden = !(s.can_start && !s.running && !s.starting);
+      if (s.running) showVon("up", `Von ${s.version || ""} is running at ${s.url}`.replace("  ", " "));
+      else if (s.starting) { showVon("wait", `Starting Von at ${s.url}… the first start downloads about 3 GB of weights.`); vonPoll = setTimeout(checkVon, 2000); }
+      else if (s.error) showVon("", `Von failed to start.\n${s.error}`);
+      else showVon("", `Von is not running at ${s.url}.` + (s.can_start ? "" : " Install it with pip install von-sdk, then start it with von serve."));
+      return;
+    }
+    const url = vonBase();
+    const h = await (await fetch(url + "/health")).json();
+    showVon("up", `Von ${h.engine || h.version || ""} is running at ${url}`.replace("  ", " "));
+  } catch {
+    $("vonstart").hidden = true;
+    showVon("", localServer ? "Could not reach the local app server. Is router.py still running?" : `Von is not reachable at ${vonBase()}. Start it on this machine with von serve (or double-click jev-app/start-von.command), then check again.`);
+  }
+}
+async function startVon() {
+  $("vonstart").disabled = true;
+  try {
+    const res = await fetch("api/von/start", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+    const s = await readJson(res);
+    if (!res.ok) { showVon("", s.error || "Could not start Von."); return; }
+    $("vonstart").hidden = true;
+    checkVon();
+  } catch (e) { showVon("", "Could not start Von.\n" + e.message); }
+  finally { $("vonstart").disabled = false; }
+}
 let exampleIndex = 0;
 function loadExample() { $("query").value = EXAMPLES[exampleIndex++ % EXAMPLES.length]; }
 
@@ -358,6 +402,7 @@ async function route() {
       else tier = pickTier(decision.probs, coverage);
     }
     const tVon = Math.round(performance.now() - t0);
+    if (decision && decision.outage) checkVon();
     const sec = renderDecision(tier, decision, coverage, Boolean(forced));
     pending = { query, tier, tVon };
     sec.append(renderStep2(tier));
@@ -439,6 +484,8 @@ function updateNotes() {
 }
 
 $("form").addEventListener("submit", (e) => { e.preventDefault(); route(); });
+$("vonstart").addEventListener("click", startVon);
+$("vonurl").addEventListener("change", checkVon);
 $("example").addEventListener("click", loadExample);
 $("coverage").addEventListener("input", () => { $("coverageout").value = Number($("coverage").value).toFixed(2); });
 $("coverageout").value = Number($("coverage").value).toFixed(2);
@@ -453,7 +500,7 @@ updateNotes();
 fetch("api/config").then((r) => (r.ok ? r.json() : Promise.reject())).then((c) => {
   if (!c || typeof c.von_env_key !== "boolean") throw 0;
   localServer = true; envKeys = { von: c.von_env_key, anthropic: Boolean(c.anthropic_env_key) }; serverVonUrl = String(c.von_url || "");
-}).catch(() => {}).finally(updateNotes);
+}).catch(() => {}).finally(() => { updateNotes(); checkVon(); });
 </script>
 </body>
 </html>

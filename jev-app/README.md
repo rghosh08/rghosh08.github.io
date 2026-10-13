@@ -80,6 +80,14 @@ safety-classifier refusal is retried on a fallback model server-side.
 python3 router.py         # then open http://127.0.0.1:8766
 ```
 
+For a one-click session on a Mac, double-click `start-von.command` in
+Finder. It starts `von serve` and `router.py` (skipping whichever is already
+running), waits for Von, and opens the page. Closing its Terminal window stops
+both. The page also shows a Von status line; when served by `router.py` and
+Von is not running, a **Start Von** button starts it as a child of the app
+server (looked for at `VON_BIN`, then `~/.venvs/von/bin/von`, then on `PATH`),
+so it stops when the app server does.
+
 Locally, both calls go through `router.py`. The Von call goes to
 `VON_BASE_URL` (default `http://127.0.0.1:8000`) unless the page names
 another server, with `VON_API_KEY` as the bearer token when the Von server

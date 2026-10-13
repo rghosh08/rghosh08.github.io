@@ -20,8 +20,14 @@ the browser calls the Von server directly (Von allows cross-origin calls by
 default) and the Claude call goes straight to api.anthropic.com.
 """
 import argparse
+import atexit
 import json
 import os
+import shutil
+import signal
+import subprocess
+import tempfile
+import threading
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -33,6 +39,92 @@ VON_BASE_URL = os.environ.get("VON_BASE_URL", "http://127.0.0.1:8000")
 INDEX = Path(__file__).resolve().parent.parent / "public" / "jev-router.html"
 MAX_BODY = 2 * 1024 * 1024
 ALLOWED_MODELS = {"claude-haiku-5-5", "claude-sonnet-5-5", "claude-opus-5-5"}
+
+
+def find_von():
+    """The `von` executable the Start button runs: VON_BIN, ~/.venvs/von, or PATH."""
+    for cand in (os.environ.get("VON_BIN"), Path.home() / ".venvs" / "von" / "bin" / "von", shutil.which("von")):
+        if cand and Path(cand).is_file() and os.access(cand, os.X_OK):
+            return str(cand)
+    return None
+
+
+VON_BIN = find_von()
+_von_lock = threading.Lock()
+_von_proc = None      # the `von serve` child started from the page, if any
+_von_log = None       # its log file path
+
+
+def von_health(base_url):
+    """GET /health on a Von server. Returns its JSON body, or None when it is not up."""
+    try:
+        with urllib.request.urlopen(base_url.rstrip("/") + "/health", timeout=2) as resp:
+            body = json.loads(resp.read())
+            return body if isinstance(body, dict) else {}
+    except (urllib.error.URLError, TimeoutError, OSError, ValueError):
+        return None
+
+
+def von_state():
+    """What the page shows in its Von status line."""
+    health = von_health(VON_BASE_URL)
+    host = urllib.parse.urlsplit(VON_BASE_URL).hostname or ""
+    starting = _von_proc is not None and _von_proc.poll() is None and health is None
+    failed = _von_proc is not None and _von_proc.poll() is not None and health is None
+    state = {
+        "url": VON_BASE_URL,
+        "running": health is not None,
+        "version": (health or {}).get("engine") or (health or {}).get("version"),
+        "can_start": bool(VON_BIN) and host in ("127.0.0.1", "localhost", "::1"),
+        "starting": starting,
+        "log": _von_log,
+    }
+    if failed:
+        tail = ""
+        try:
+            tail = Path(_von_log).read_text(errors="replace")[-1500:]
+        except OSError:
+            pass
+        state["error"] = f"von serve exited with code {_von_proc.returncode}.\n{tail}".strip()
+    return state
+
+
+def start_von():
+    """Spawn `von serve` on VON_BASE_URL's host and port. Returns (http_status, body)."""
+    global _von_proc, _von_log
+    with _von_lock:
+        state = von_state()
+        if state["running"] or state["starting"]:
+            return 200, state
+        if not state["can_start"]:
+            if not VON_BIN:
+                return 400, {"error": "Von is not installed. Run: uv venv --python 3.12 ~/.venvs/von && uv pip install --python ~/.venvs/von/bin/python 'von-sdk>=1.3.7'"}
+            return 400, {"error": f"VON_BASE_URL is {VON_BASE_URL}, which is not on this machine, so it cannot be started from here."}
+        parts = urllib.parse.urlsplit(VON_BASE_URL)
+        fd, _von_log = tempfile.mkstemp(prefix="von-serve-", suffix=".log")
+        log = os.fdopen(fd, "wb")
+        try:
+            _von_proc = subprocess.Popen(
+                [VON_BIN, "serve", "--host", parts.hostname, "--port", str(parts.port or 8000)],
+                stdin=subprocess.DEVNULL, stdout=log, stderr=subprocess.STDOUT, start_new_session=True,
+            )
+        except OSError as err:
+            return 500, {"error": f"Could not run {VON_BIN}: {err}"}
+        finally:
+            log.close()
+        atexit.register(stop_von)
+        print(f"Started von serve (pid {_von_proc.pid}), log at {_von_log}")
+        return 202, von_state()
+
+
+def stop_von():
+    """Stop the `von serve` child when the app server exits, so it lives for this session only."""
+    if _von_proc is not None and _von_proc.poll() is None:
+        _von_proc.terminate()
+        try:
+            _von_proc.wait(timeout=10)
+        except subprocess.TimeoutExpired:
+            _von_proc.kill()
 
 
 def call_von(base_url, api_key, model, state, questions):
@@ -102,6 +194,8 @@ class Handler(BaseHTTPRequestHandler):
                 "von_env_key": bool(os.environ.get("VON_API_KEY")),
                 "anthropic_env_key": bool(os.environ.get("ANTHROPIC_API_KEY")),
             })
+        elif self.path == "/api/von":
+            self._send(200, von_state())
         else:
             self._send(404, {"error": "Not found"})
 
@@ -110,7 +204,17 @@ class Handler(BaseHTTPRequestHandler):
             return self.classify()
         if self.path == "/api/answer":
             return self.answer()
+        if self.path == "/api/von/start":
+            return self.von_start()
         self._send(404, {"error": "Not found"})
+
+    def von_start(self):
+        host = self.headers.get("Host", "")
+        origin = self.headers.get("Origin")
+        if origin and origin != f"http://{host}":
+            return self._send(403, {"error": "Cross-origin requests are not allowed."})
+        status, body = start_von()
+        self._send(status, body)
 
     def classify(self):
         body = self._read_json()
@@ -192,11 +296,22 @@ def main():
     args = parser.parse_args()
     server = ThreadingHTTPServer(("127.0.0.1", args.port), Handler)
     print(f"Von Semantic Router is at http://127.0.0.1:{args.port}  (Ctrl+C to stop)")
-    print(f"Von is expected at {VON_BASE_URL}  (pip install von-sdk, then von serve)")
+    if von_health(VON_BASE_URL):
+        print(f"Von is running at {VON_BASE_URL}")
+    elif VON_BIN:
+        print(f"Von is not running at {VON_BASE_URL}; the page's Start button runs {VON_BIN}")
+    else:
+        print(f"Von is expected at {VON_BASE_URL}  (pip install von-sdk, then von serve)")
+    # A plain SIGTERM would skip the cleanup below, leaving `von serve` running.
+    def on_term(*_):
+        raise KeyboardInterrupt
+    signal.signal(signal.SIGTERM, on_term)
     try:
         server.serve_forever()
     except KeyboardInterrupt:
         print()
+    finally:
+        stop_von()
 
 
 if __name__ == "__main__":
